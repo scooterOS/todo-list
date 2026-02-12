@@ -17,7 +17,6 @@ const events = {
     publish: function (eventName, data) {
         if (this.events[eventName]) {
             this.events[eventName].forEach(function(fn) {
-                console.log(data)
                 fn(data);
             });
         }

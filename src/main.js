@@ -1,10 +1,10 @@
-import pubsubModule from "./pubsub.js";
-import renderModule from "./render.js";
-import toolbarModule from "./toolbar.js";
-import sidebarModule from "./sidebar.js";
-import contentMondule from "./content.js";
+import pubsub from "./pubsub.js";
+import "./storage.js";
+import "./popup.js";
+import "./toolbar.js";
+import "./sidebar.js";
+import "./content.js";
 
 (function() {
-    // main content here
-    pubsubModule.publish('view-mode');
+    pubsub.publish('init');
 })();

@@ -1,4 +1,4 @@
-/* general style */
+/* general styles */
 
 * {
     box-sizing: border-box;
@@ -89,6 +89,7 @@ header {
 }
 
 #toolbar {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -103,6 +104,11 @@ header {
     padding: 0 4px;
 }
 
+.submenu {
+    position: absolute;
+    width: 200px;
+}
+
 /* sidebar */
 
 #sidebar {
@@ -114,4 +120,17 @@ header {
 .option {
     display: grid;
     grid-template-columns: auto 1fr;
+}
+
+/* content */
+
+#content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    padding: 15px;
+}
+
+.todo-item {
+    border: 2px solid blue;
+    border-radius: 8px;
 }

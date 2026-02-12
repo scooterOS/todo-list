@@ -3,7 +3,7 @@ export class TodoItem {
     constructor(title='My Todo', desc='', deadline=null, priority=2, complete=false, id=null) {
         this.title = title;
         this.desc = desc;
-        this.deadline = deadline || new Date();
+        this.deadline = deadline? new Date(deadline) : new Date();
         this.priority = priority;
         this.complete = complete;
         this.id = id || crypto.randomUUID();
@@ -18,7 +18,7 @@ export class TodoItem {
     }
 
     getDeadlineText() {
-        return 'Due Date:\n' + this.deadline.toDateString();
+        return 'Due Date:\n' + this.deadline.toLocaleDateString();
     }
 
     getPriorityText() {
@@ -44,6 +44,19 @@ export class TodoItem {
 }
 
 
+class ProjectRef {
+
+    constructor(title, id) {
+        this.title = title;
+        this.id = id;
+    }
+
+    equals(other) {
+        return this.id === other.id;
+    }
+}
+
+
 export class Project {
 
     constructor(title='My Project', desc='', tags=null, todos=null, id=null) {
@@ -58,16 +71,19 @@ export class Project {
         return this.id === other.id;
     }
 
+    getRef() {
+        return new ProjectRef(this.title, this.id);
+    }
+
     copy() {
         return new Project(
             this.title,
             this.desc,
             this.tags,
-            this.todos,
-            false,
+            this.todos
         );
     }
-
+    
     getDefault() {
         const today = new Date();
         const yesterday = new Date();
@@ -103,6 +119,6 @@ export class Project {
                     1,
                 ),
             ]
-        )
+        );
     }
 }
