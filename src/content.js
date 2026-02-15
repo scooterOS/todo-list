@@ -8,7 +8,7 @@ const State = {
     WAIT: 0,    // Wait for external events to resolve
     PROJECT: 1, // Edit project
     VIEW: 2,    // View todos from any project
-}
+};
 
 
 (function() {
@@ -21,7 +21,7 @@ const State = {
     var saved = true;
 
     function init() {
-        currentProject = storage.loadFirstProject();
+        setCurrentProject(storage.loadFirstProject() || Project.getDefault());
         state = State.PROJECT;
     }
     
@@ -36,6 +36,14 @@ const State = {
         state = lastState;
     }
 
+    function setCurrentProject(project) {
+        if (!(project instanceof Project)) return;
+
+        currentProject = project;
+        currentTodos = project.todos;
+        header = project.title;
+    }
+
     function openProject(project) {
         if (project.equals(currentProject)) return;
         if (!(project instanceof Project) || state === State.WAIT) {
@@ -47,10 +55,7 @@ const State = {
         if (currentProject && !saved) {
             storage.saveProject(currentProject);
         }
-        currentProject = project;
-        currentTodos = project.todos;
-        header = project.title;
-
+        setCurrentProject(project);
         render();
     }
 
@@ -60,7 +65,7 @@ const State = {
 
     function removeProject(project) {
         if (project.equals(currentProject)) {
-            currentProject = storage.loadFirstProject();
+            setCurrentProject(storage.loadFirstProject());
         }
     }
 
@@ -109,11 +114,11 @@ const State = {
         saved = false;
     }
 
-    function updateTodo(todoData) {
+    function editTodo(todoData) {
         // param: { old: OldTodo, new: NewTodo }
         const index = currentTodos.findIndex(t => t.equals(todoData.old));
         if (index === -1 || !(todoData.new instanceof TodoItem) || state !== State.PROJECT) {
-            console.warn("Error: Cannot update todo item.");
+            console.warn("Error: Cannot edit todo item.");
             return;
         }
         currentTodos.splice(index, 1, todoData.new);
@@ -179,8 +184,8 @@ const State = {
             // Add event listeners
             $checkbox.addEventListener('click', () => todo.markComplete());
             $editBtn.addEventListener('click', () => pubsub.publish('edit-todo-popup', todo));
-            $copyBtn.addEventListener('click', () => pubsub.publish('add-todo', todo.copy()));
-            $deleteBtn.addEventListener('click', () => pubsub.publish('remove-todo', todo));
+            $copyBtn.addEventListener('click', () => addTodo(todo.copy()));
+            $deleteBtn.addEventListener('click', () => removeTodo(todo));
         }
     }
 
@@ -189,16 +194,19 @@ const State = {
     pubsub.subscribe('freeze', freeze);
     pubsub.subscribe('thaw', thaw);
     pubsub.subscribe('open-project', openProject);
-    pubsub.subscribe('edit-project');
+    pubsub.subscribe('edit-project', editProject);
     pubsub.subscribe('remove-project', removeProject);
     pubsub.subscribe('exit', onExit);
     pubsub.subscribe('view-todos', viewTodos);
     pubsub.subscribe('add-todo', addTodo);
-    pubsub.subscribe('remove-todo', removeTodo);
-    pubsub.subscribe('update-todo', updateTodo);
+    pubsub.subscribe('edit-todo', editTodo);
     pubsub.subscribe('sort-alpha', sortAlpha);
     pubsub.subscribe('sort-date', sortDate);
     pubsub.subscribe('sort-priority', sortPriority);
     pubsub.subscribe('sort-completed', sortCompleted);
+
+    // Forward events
+    pubsub.subscribe('edit-project-request', () => pubsub.publish('edit-project-popup', currentProject));
+    pubsub.subscribe('remove-project-request', () => pubsub.publish('remove-project-popup', currentProject));
     
 })();

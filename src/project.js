@@ -64,7 +64,7 @@ export class Project {
         this.desc = desc;
         this.tags = tags || [];
         this.todos = todos || [];
-        this.id = id || cryptos.randomUUID();
+        this.id = id || crypto.randomUUID();
     }
 
     equals(other) {
@@ -84,7 +84,7 @@ export class Project {
         );
     }
     
-    getDefault() {
+    static getDefault() {
         const today = new Date();
         const yesterday = new Date();
         yesterday.setDate(today.getDate - 1);

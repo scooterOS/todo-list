@@ -6,7 +6,7 @@ const State = {
     WAIT: 0,    // Wait for external events to resolve
     PROJECT: 1, // Edit project
     VIEW: 2,    // View todos from any project
-}
+};
 
 
 (function() {
@@ -73,16 +73,16 @@ const State = {
         // Add buttons
         const $newTodo = renderer.addElement($toolbar, 'button', 'New Task', ['new-task', 'icon']);
         const $newProject = renderer.addElement($toolbar, 'button', 'New Project', ['new-project', 'icon']);
-        const $editTags = renderer.addElement($toolbar, 'button', 'Edit Tags', ['edit-tags', 'icon']);
+        const $editProject = renderer.addElement($toolbar, 'button', 'Edit', ['edit-project', 'icon']);
         const $sortTodos = renderer.addElement($toolbar, 'button', 'Sort', ['sort', 'icon']);
-        const $exportProject = renderer.addElement($toolbar, 'button', 'Export', ['export', 'icon']);
+        const $deleteProject = renderer.addElement($toolbar, 'button', 'Delete', ['delete-project', 'icon']);
 
         // Add event listeners
         $newTodo.addEventListener('click', () => pubsub.publish('new-todo-popup'));
         $newProject.addEventListener('click', () => pubsub.publish('new-project-popup'));
-        $editTags.addEventListener('click', () => pubsub.publish('edit-tags-popup'));
+        $editProject.addEventListener('click', () => pubsub.publish('edit-project-request'));
         $sortTodos.addEventListener('click', () => clickSortMenu());
-        $exportProject.addEventListener('click', () => pubsub.publish('export-project'));
+        $deleteProject.addEventListener('click', () => pubsub.publish('remove-project-request'));
     }
 
     function renderView() {
@@ -94,7 +94,7 @@ const State = {
 
         // Add event listeners
         $newProject.addEventListener('click', () => pubsub.publish('new-project-popup'));
-        $sortTodos.addEventListener('click', clickSortMenu);
+        $sortTodos.addEventListener('click', () => clickSortMenu());
         $search.addEventListener('click', () => pubsub.publish('search-todos', $searchbar.textContent));
         $searchbar.addEventListener('click', () => $searchbar.select());
     }
@@ -117,7 +117,7 @@ const State = {
 
         // Add event listeners
         $alpha.addEventListener('click', () => pubsub.publish('sort-alpha', $reverse.checked));
-        $date.addEventListener('click', () => pubsub.publish('sort-date'), $reverse.checked);
+        $date.addEventListener('click', () => pubsub.publish('sort-date', $reverse.checked));
         $priority.addEventListener('click', () => pubsub.publish('sort-priority', $reverse.checked));
         $completed.addEventListener('click', () => pubsub.publish('sort-completed', $reverse.checked));
     }

@@ -153,7 +153,7 @@ import { TodoItem, Project } from './project.js';
                     todo.complete,
                     todo.id
                 );
-                pubsub.publish('update-todo', { 'old': todo, 'new': newTodo });
+                pubsub.publish('edit-todo', { 'old': todo, 'new': newTodo });
             });
         },
         newProject: function () {
