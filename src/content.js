@@ -5,7 +5,7 @@ import { TodoItem, Project } from './project.js';
 
 
 const State = {
-    WAIT: 0,    // Wait for external events to resolve
+    WAIT: 0,    // Wait for page to load
     PROJECT: 1, // Edit project
     VIEW: 2,    // View todos from any project
 };
@@ -17,7 +17,6 @@ const State = {
     var currentTodos = [];
     var header = '';
     var state = State.WAIT;
-    var lastState = State.WAIT;
     var saved = true;
 
     function init() {
@@ -25,17 +24,6 @@ const State = {
         state = State.PROJECT;
 
         render();
-    }
-    
-    function freeze() {
-        if (state === State.WAIT) return;
-
-        lastState = state;
-        state = State.WAIT;
-    }
-
-    function thaw() {
-        state = lastState;
     }
 
     function setCurrentProject(project) {
@@ -162,10 +150,11 @@ const State = {
 
         const $header = renderer.addElement($content, 'div', '', ['title']);
         renderer.addElement($header, 'h1', header);
+        const $todoContainer = renderer.addElement($content, 'div', '', ['todo-container']);
 
         for (let todo of currentTodos) {
             // Add todo elements
-            const $todoElem = renderer.addElement($content, 'div', '', ['todo-item']);
+            const $todoElem = renderer.addElement($todoContainer, 'div', '', ['todo-item']);
             const $todoRow = renderer.addElement($todoElem, 'div', '', ['row']);
             const $checkbox = renderer.addElement($todoRow, 'input', '', [], { 'type': 'checkbox' });
             renderer.addElement($todoRow, 'h2', todo.title, ['todo-title']);
@@ -193,8 +182,6 @@ const State = {
 
     // Subscribe to events
     pubsub.subscribe('init', init);
-    pubsub.subscribe('freeze', freeze);
-    pubsub.subscribe('thaw', thaw);
     pubsub.subscribe('open-project', openProject);
     pubsub.subscribe('edit-project', editProject);
     pubsub.subscribe('remove-project', removeProject);

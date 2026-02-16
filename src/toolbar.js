@@ -3,7 +3,7 @@ import renderer from './render.js';
 
 
 const State = {
-    WAIT: 0,    // Wait for external events to resolve
+    WAIT: 0,    // Wait for page to load
     PROJECT: 1, // Edit project
     VIEW: 2,    // View todos from any project
 };
@@ -12,24 +12,12 @@ const State = {
 (function() {
     const $toolbar = document.getElementById('toolbar');
     var state = State.WAIT;
-    var lastState = State.WAIT;
     var sortMenuOpen = false;
     
     function init() {
         state = State.PROJECT;
 
         render();
-    }
-    
-    function freeze() {
-        if (state === State.WAIT) return;
-
-        lastState = state;
-        state = State.WAIT;
-    }
-
-    function thaw() {
-        state = lastState;
     }
 
     function openProject() {
@@ -126,8 +114,6 @@ const State = {
 
     // Subscribe to events
     pubsub.subscribe('init', init);
-    pubsub.subscribe('freeze', freeze);
-    pubsub.subscribe('thaw', thaw);
     pubsub.subscribe('open-project', openProject);
     pubsub.subscribe('view-todos', viewTodos);
 

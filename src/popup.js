@@ -5,86 +5,41 @@ import { TodoItem, Project } from './project.js';
 
 (function() {
 
-    const blockEvents = (ev) => {
-        if (!ev.target.parentElement.classList.contains('overlay')) {
-            ev.preventDefault();
-            ev.stopPropagation();
-        }
-    }
-
-    const formFilled = ($form) => {
-        const requiredFields = $form.querySelectorAll('[required]');
-        let allFilled = true;
-
-        requiredFields.forEach(field => {
-            if (!field.value) allFilled = false;
-        });
-
-        return allFilled;
-    }
-
-    const alertFormNotFilled = ($form) => {
-        // Check if alert is already present
-        const $pastAlert = $form.querySelector('.alert');
-        if (!$pastAlert) return;
-
-        renderer.addElement($form, 'div', 'You must fill out required fields!', ['alert']);
-        $form.classList.add('mark-incomplete');
-    }
-
     const launch = ($form, resolveFn) => {
-        // Freeze other modules
-        pubsub.publish('freeze');
-
-        // Block background click events
-        document.addEventListener('click', blockEvents, true);
-
-        // Fade background
-        const $body = document.querySelector('body');
-        $body.classList.add('faded');
+        // Add class to form
+        $form.classList.add('dialog');
 
         // Add form to popup element
-        const $popup = renderer.addElement($body, 'div', '', ['overlay'], { 'id': 'popup' });
-        $form.classList.add('overlay');
+        const $body = document.querySelector('body');
+        const $popup = renderer.addElement($body, 'div', '', ['overlay'], { id: 'popup' });
         $popup.append($form);
         
         // Add submit and cancel buttons
-        const $btnRow = renderer.addElement($form, 'div', '', ['row', 'overlay']);
-        $cancelBtn = renderer.addElement($btnRow, 'button', 'Cancel', ['cancel-btn']);
-        $submitBtn = renderer.addElement($btnRow, 'button', 'Submit', ['submit-btn']);
+        const $btnRow = renderer.addElement($form, 'div', '', ['row']);
+        const $cancelBtn = renderer.addElement($btnRow, 'button', 'Cancel', ['cancel-btn'], { type: 'button' });
+        const $submitBtn = renderer.addElement($btnRow, 'button', 'Submit', ['submit-btn'], { type: 'submit'} );
 
         // Add event listeners
         $cancelBtn.addEventListener('click', () => resolve());
-        $submitBtn.addEventListener('click', () => resolve(resolveFn));
-
-        // Render popup
-        document.addElement($popup);
+        $form.addEventListener('submit', (ev) => {
+            ev.preventDefault();
+            resolve(resolveFn)});
+        $popup.addEventListener('mousedown', (ev) => {
+            if (ev.target === $popup) resolve();
+        });
     }
 
     const resolve = (resolveFn) => {
-        // Remove popup and publish data
-        const $form = document.querySelector('#popup form');
-
-        if ($form) {
-            if (resolveFn && !formFilled($form)) {
-                alertFormNotFilled($form);
-                return;
-            }
-            $form.remove();
-        }
-        // Thaw other modules
-        pubsub.publish('thaw');
-
-        // Unblock click events
-        document.removeEventListener('click', blockEvents);
-
-        // Unfade background
-        document.querySelector('body').classList.remove('faded');
-
         // Call the resolution function
-        if (resolveFn) {
+        if (typeof resolveFn === 'function') {
             resolveFn();
+        } else {
+            console.warn(`Invalid resolution function: ${resolveFn}`);
         }
+
+        // Remove popup
+        document.getElementById('popup').remove();
+
     }
 
     const popup = {
@@ -95,13 +50,17 @@ import { TodoItem, Project } from './project.js';
 
             renderer.addElement($form, 'legend', 'New Task');
             renderer.addElement($form, 'h5', 'Name', ['label']);
-            const $title = renderer.addElement($form, 'input', '', ['title-field'], { 'required': true });
+
+            const $title = renderer.addElement($form, 'input', '', ['title-field'], { required: true });
             renderer.addElement($form, 'h5', 'Description', ['label']);
+
             const $desc = renderer.addElement($form, 'textarea', '', ['desc-field']);
             renderer.addElement($form, 'h5', 'Due Date', ['label']);
-            const $deadline = renderer.addElement($form, 'input', '', ['deadline-field'], { 'type': 'date', 'required': true });
+
+            const $deadline = renderer.addElement($form, 'input', '', ['deadline-field'], { type: 'date', required: true });
             renderer.addElement($form, 'h5', 'Priority', ['label']);
-            const $priority = renderer.addElement($form, 'select', '', ['priority-field', 'overlay']);
+
+            const $priority = renderer.addElement($form, 'select', '', ['priority-field']);
             renderer.recursiveAdd($priority, [
                 { 'type': 'option', 'text': 'Some Day', 'attr': { 'value': 0 }},
                 { 'type': 'option', 'text': 'Low', 'attr': { 'value': 1 }},
@@ -128,13 +87,17 @@ import { TodoItem, Project } from './project.js';
 
             renderer.addElement($form, 'legend', 'Edit Task');
             renderer.addElement($form, 'h6', 'Name', ['label']);
-            const $title = renderer.addElement($form, 'input', '', ['title-field'], { 'value': todo.title, 'required': true });
+
+            const $title = renderer.addElement($form, 'input', '', ['title-field'], { value: todo.title, required: true });
             renderer.addElement($form, 'h6', 'Description', ['label']);
-            const $desc = renderer.addElement($form, 'textarea', '', ['desc-field'], { 'value': todo.desc });
+
+            const $desc = renderer.addElement($form, 'textarea', '', ['desc-field'], { value: todo.desc });
             renderer.addElement($form, 'h6', 'Due Date', ['label']);
-            const $deadline = renderer.addElement($form, 'input', '', ['deadline-field'], { 'type': 'date', 'value': todo.deadline, 'required': true });
+
+            const $deadline = renderer.addElement($form, 'input', '', ['deadline-field'], { type: 'date', value: todo.deadline, required: true });
             renderer.addElement($form, 'h6', 'Priority', ['label']);
-            const $priority = renderer.addElement($form, 'select', '', ['priority-field', 'overlay'], { 'value': todo.priority });
+
+            const $priority = renderer.addElement($form, 'select', '', ['priority-field'], { value: todo.priority });
             renderer.recursiveAdd($priority, [
                 { 'type': 'option', 'text': 'Some Day', 'attr': { 'value': 0 }},
                 { 'type': 'option', 'text': 'Low', 'attr': { 'value': 1 }},
@@ -163,10 +126,13 @@ import { TodoItem, Project } from './project.js';
 
             renderer.addElement($form, 'legend', 'New Project');
             renderer.addElement($form, 'h5', 'Name', ['label']);
-            const $title = renderer.addElement($form, 'input', '', ['title-field'], { 'required': true });
+
+            const $title = renderer.addElement($form, 'input', '', ['title-field'], { required: true });
             renderer.addElement($form, 'h5', 'Description', ['label']);
+
             const $desc = renderer.addElement($form, 'textarea', '', ['desc-field']);
             renderer.addElement($form, 'h5', 'Tags', ['label']);
+
             const $tags = renderer.addElement($form, 'div', '', ['tag-container']);
             const $tagBtn = renderer.addElement($tags, 'button', '+', ['add-tag-btn']);
 
@@ -198,21 +164,24 @@ import { TodoItem, Project } from './project.js';
 
             renderer.addElement($form, 'legend', 'Edit Project');
             renderer.addElement($form, 'h5', 'Name', ['label']);
-            const $title = renderer.addElement($form, 'input', '', ['title-field'], { 'value': project.title, 'required': true });
+
+            const $title = renderer.addElement($form, 'input', '', ['title-field'], { value: project.title, required: true });
             renderer.addElement($form, 'h5', 'Description', ['label']);
-            const $desc = renderer.addElement($form, 'textarea', '', ['desc-field'], { 'value': project.desc, });
+
+            const $desc = renderer.addElement($form, 'textarea', '', ['desc-field'], { value: project.desc });
             renderer.addElement($form, 'h5', 'Tags', ['label']);
-            const $tagContainer = renderer.addElement($form, 'div', '', ['tag-container', 'overlay']);
+
+            const $tagContainer = renderer.addElement($form, 'div', '', ['tag-container']);
             const $tagBtn = renderer.addElement($tagContainer, 'button', '+', ['add-tag-btn']);
 
             // Add tag elements
             for (let tag of project.tags) {
-                renderer.addElement($tagContainer, 'input', '', ['tag'], { 'value': tag });
+                renderer.addElement($tagContainer, 'input', '', ['tag'], { value: tag });
             }
 
             // Add event listeners
             $tagBtn.addEventListener('click', () => {
-                const $tag = renderer.addElement($tagContainer, 'input', '', ['tag', 'overlay']);
+                const $tag = renderer.addElement($tagContainer, 'input', '', ['tag']);
                 $tag.select();
                 $tag.addEventListener('click', (ev) => {
                     if (ev.button === 2) {

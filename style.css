@@ -80,7 +80,7 @@ button {
 
 /* toolbar */
 
-header {
+#header {
     display: flex;
     align-items: center;
     grid-row: 1 / 2;
@@ -124,7 +124,7 @@ header {
 
 /* content */
 
-#content {
+.todo-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     padding: 15px;
@@ -133,4 +133,26 @@ header {
 .todo-item {
     border: 2px solid blue;
     border-radius: 8px;
+}
+
+/* popup */
+
+.overlay {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inset: 0;
+    background: rgba(0, 0, 0, .35);
+    z-index: 9999;
+}
+
+body:has(.overlay) {
+    overflow: hidden;
+}
+
+.dialog {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
 }
