@@ -17,6 +17,8 @@ const State = {
     
     function init() {
         state = State.PROJECT;
+
+        render();
     }
     
     function freeze() {

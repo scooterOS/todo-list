@@ -1,8 +1,10 @@
+import { Project } from './project.js';
+
 /* 
  * Use localStorage to save projects.
  * The key, value pair for all items are { "project:" project.id : project }
  */
-const PREFIX = "project:";
+const PREFIX = 'project:';
 
 const storage = {
     newProject: function (project, override=false) {
@@ -16,7 +18,8 @@ const storage = {
         localStorage.setItem(PREFIX + project.id, JSON.stringify(project));
     },
     loadProject: function (projectID) {
-        return JSON.parse(localStorage.getItem(PREFIX + projectID));
+        const data = JSON.parse(localStorage.getItem(PREFIX + projectID));
+        return data? Project.fromJSON(data) : null; 
     },
     deleteProject: function (projectID) {
         localStorage.removeItem(PREFIX + projectID);
@@ -26,7 +29,8 @@ const storage = {
             const key = localStorage.key(i);
             if (!key.startsWith(PREFIX)) continue;
 
-            return JSON.parse(localStorage.getItem(key));
+            const data = JSON.parse(localStorage.getItem(key));
+            return data? Project.fromJSON(data) : null;
         }
         return null;
     },
@@ -36,7 +40,7 @@ const storage = {
             const key = localStorage.key(i);
             if (!key.startsWith(PREFIX)) continue;
 
-            const project = JSON.parse(localStorage.getItem(key));
+            const project = Project.fromJSON(JSON.parse(localStorage.getItem(key)));
             refs.push(project.getRef());
         }
         return refs;
@@ -47,7 +51,7 @@ const storage = {
             const key = localStorage.key(i);
             if (!key.startsWith(PREFIX)) continue;
 
-            const project = JSON.parse(localStorage.getItem(key));
+            const project = Project.fromJSON(JSON.parse(localStorage.getItem(key)));
             if (filterFn) {
                 todos.push(...project.todos.filter(filterFn));
             } else {

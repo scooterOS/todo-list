@@ -41,6 +41,17 @@ export class TodoItem {
             this.complete
         );
     }
+
+    static fromJSON(obj) {
+        return new TodoItem(
+            obj.title,
+            obj.desc,
+            obj.deadline,
+            obj.priority,
+            obj.complete,
+            obj.id
+        );
+    }
 }
 
 
@@ -83,13 +94,23 @@ export class Project {
             this.todos
         );
     }
+
+    static fromJSON(obj) {
+        return new Project(
+            obj.title,
+            obj.desc,
+            obj.tags,
+            obj.todos? obj.todos.map(todo => TodoItem.fromJSON(todo)) : [],
+            obj.id
+        );
+    }
     
     static getDefault() {
         const today = new Date();
         const yesterday = new Date();
-        yesterday.setDate(today.getDate - 1);
+        yesterday.setDate(today.getDate() - 1);
         const tomorrow = new Date();
-        tomorrow.setDate(today.getDate + 1);
+        tomorrow.setDate(today.getDate() + 1);
         const nextWeek = new Date();
         nextWeek.setDate(today.getDate() + 7);
 

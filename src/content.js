@@ -23,6 +23,8 @@ const State = {
     function init() {
         setCurrentProject(storage.loadFirstProject() || Project.getDefault());
         state = State.PROJECT;
+
+        render();
     }
     
     function freeze() {
@@ -159,16 +161,16 @@ const State = {
         renderer.clearContents($content);
 
         const $header = renderer.addElement($content, 'div', '', ['title']);
-        renderer.addElement($projectHeader, 'h1', header);
+        renderer.addElement($header, 'h1', header);
 
-        for (let todo in currentTodos) {
+        for (let todo of currentTodos) {
             // Add todo elements
             const $todoElem = renderer.addElement($content, 'div', '', ['todo-item']);
             const $todoRow = renderer.addElement($todoElem, 'div', '', ['row']);
             const $checkbox = renderer.addElement($todoRow, 'input', '', [], { 'type': 'checkbox' });
             renderer.addElement($todoRow, 'h2', todo.title, ['todo-title']);
             renderer.addElement($todoRow, 'span', todo.getDeadlineText(), ['todo-deadline']);
-            renderer.addElement($todoRow, 'span', todo.getPiorityText(), ['todo-priority']);
+            renderer.addElement($todoRow, 'span', todo.getPriorityText(), ['todo-priority']);
             renderer.addElement($todoElem, 'span', todo.desc, ['todo-desc']);
 
             // Mark if complete

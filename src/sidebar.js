@@ -57,7 +57,7 @@ import storage from './storage.js';
         renderer.addElement($projectCol, 'h1', 'Projects', ['title']);
 
         // Add project elements and event listeners
-        for (let ref in projectRefs) {
+        for (let ref of projectRefs) {
             const $project = renderer.addElement($projectCol, 'h2', ref.title, ['project-label']);
             $project.addEventListener('click', () => {
                 const project = storage.loadProject(ref.id);

@@ -206,7 +206,7 @@ import { TodoItem, Project } from './project.js';
             const $tagBtn = renderer.addElement($tagContainer, 'button', '+', ['add-tag-btn']);
 
             // Add tag elements
-            for (let tag in project.tags) {
+            for (let tag of project.tags) {
                 renderer.addElement($tagContainer, 'input', '', ['tag'], { 'value': tag });
             }
 
