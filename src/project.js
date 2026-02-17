@@ -10,7 +10,7 @@ export class TodoItem {
     }
 
     equals(other) {
-        return this.id === other.id;
+        return other && this.id === other.id;
     }
 
     markComplete() {
@@ -63,7 +63,7 @@ class ProjectRef {
     }
 
     equals(other) {
-        return this.id === other.id;
+        return other && this.id === other.id;
     }
 }
 
@@ -79,7 +79,7 @@ export class Project {
     }
 
     equals(other) {
-        return this.id === other.id;
+        return other && this.id === other.id;
     }
 
     getRef() {

@@ -1,11 +1,11 @@
 import pubsub from './pubsub.js';
 import renderer from './render.js';
 import storage from './storage.js';
-import { TodoItem, Project } from './project.js';
+import { Project } from './project.js';
 
 
 const State = {
-    WAIT: 0,    // Wait for page to load
+    EMPTY: 0,   // No projects yet
     PROJECT: 1, // Edit project
     VIEW: 2,    // View todos from any project
 };
@@ -16,12 +16,11 @@ const State = {
     var currentProject = null;
     var currentTodos = [];
     var header = '';
-    var state = State.WAIT;
-    var saved = true;
+    var state = State.EMPTY;
 
     function init() {
         var project = storage.loadFirstProject();
-        if (!(project instanceof Project)) {
+        if (!project) {
             project = Project.getDefault();
             storage.saveProject(project);
         }
@@ -44,80 +43,92 @@ const State = {
     }
 
     function openProject(project) {
-        if (project.equals(currentProject)) return;
-        if (!(project instanceof Project) || state === State.WAIT) {
-            console.warn(`Error: Cannot open project: ${project}`);
-            return;
-        }
-        if (currentProject && !saved) {
-            storage.saveProject(currentProject);
-        }
+        if (!project) return;
+
+        // Load new project
         setCurrentProject(project);
         render();
     }
 
     function editProject(oldProject, newProject) {
-        if (!(newProject instanceof Project) || state === State.WAIT) {
-            console.warn(`Error: Cannot replace project with: ${newProject}`);
+        if (!oldProject || !newProject) return;
+        if (oldProject.id !== newProject.id) {
+            console.warn(`Error: Cannot replace project with a different id: ${newProject}`);
             return;
         }
+        // Load and update project
         setCurrentProject(newProject);
+        storage.saveProject(newProject);
+        render();
+    }
+
+    function addProject(project) {
+        if (!project) return;
+        
+        // Save and open the new project
+        storage.saveProject(project);
+        setCurrentProject(project);
         render();
     }
 
     function removeProject(project) {
-        if (project.equals(currentProject)) {
-            setCurrentProject(storage.loadFirstProject());
+        // Load first project, if any
+        const newProject = storage.loadFirstProject();
+        if (newProject) {
+            setCurrentProject(newProject);
+        } else {
+            state = State.EMPTY;
         }
+        render();
     }
 
     function onExit() {
-        if (!currentProject) {
-            console.warn(`Error: Cannot save project: ${currentProject}`);
-            return;
-        }
+        if (!currentProject) return;
+
         storage.saveProject(currentProject);
     }
 
     function viewTodos(todos) {
-        if (!(todos instanceof Array) || state === State.WAIT) {
-            console.warn(`Error: Cannot view todos: ${todos}`);
-            return;
-        }
-        if (currentProject && !saved) {
-            storage.saveProject(currentProject);
-        }
+        if (todos === null) return;
+
+        // Load todos
         setTodosViewed(todos);
         render();
     }
 
     function addTodo(todo) {
-        if (!(todo instanceof TodoItem) || state !== State.PROJECT) {
-            console.warn(`Error: Cannot add todo item: ${todo}`);
-            return;
-        }
+        if (!todo || state !== State.PROJECT) return;
+
+        // Add todo item and save project
         currentTodos.push(todo);
-        saved = false;
+        storage.saveProject(currentProject);
+        render();
     }
 
     function removeTodo(todo) {
+        if (state !== State.PROJECT) return;
         const index = currentTodos.findIndex(t => t.equals(todo));
-        if (index === -1 || state !== State.PROJECT) {
-            console.warn(`Error: Cannot remove todo item: ${todo}`);
+        if (index === -1) {
+            console.warn(`Error: Cannot remove missing todo item.`);
             return;
         }
+        // Remove todo item and save project
         currentTodos.splice(index, 1);
-        saved = false;
+        storage.saveProject(currentProject);
+        render();
     }
 
     function editTodo(oldTodo, newTodo) {
+        if (!newTodo || state !== State.PROJECT) return;
         const index = currentTodos.findIndex(t => t.equals(oldTodo));
-        if (index === -1 || !(newTodo instanceof TodoItem) || state !== State.PROJECT) {
-            console.warn(`Error: Cannot replace todo item with: ${newTodo}`);
+        if (index === -1) {
+            console.warn(`Error: Cannot replace missing todo item.`);
             return;
         }
-        currentTodos.splice(index, 1, todoData.new);
-        saved = false;
+        // Replace with new todo item and save project
+        currentTodos.splice(index, 1, newTodo);
+        storage.saveProject(currentProject);
+        render();
     }
 
     function sortAlpha(reverse=false) {
@@ -143,15 +154,20 @@ const State = {
 
     function sortCompleted(reverse=false) {
         const mult = reverse? -1 : 1;
-        currentTodos.sort((a, b) => (a.complete && b.complete)? 0 : a.copmlete? mult : b.complete? -mult : 0);
+        currentTodos.sort((a, b) => (a.complete && b.complete)? 0 : a.complete? mult : b.complete? -mult : 0);
     
         render();
     }
 
     function render() {
-        if (state === State.WAIT) return;
-
         renderer.clearContents($content);
+
+        if (state === State.EMPTY) {
+            const $noProject = renderer.addElement($content, 'div', '', ['no-project']);
+            renderer.addElement($noProject, 'h2', 'You currently have no projects! 😧 Click here to add a project.');
+            $noProject.addEventListener('click', () => pubsub.publish('new-project-popup'));
+            return;
+        }
 
         const $header = renderer.addElement($content, 'div', '', ['title']);
         renderer.addElement($header, 'h1', header);
@@ -178,7 +194,11 @@ const State = {
             const $deleteBtn = renderer.addElement($todoRow, 'button', '', ['delete-btn']);
 
             // Add event listeners
-            $checkbox.addEventListener('click', () => todo.markComplete());
+            $checkbox.addEventListener('click', () => {
+                todo.markComplete();
+                storage.saveProject(currentProject);
+                render();
+            });
             $editBtn.addEventListener('click', () => pubsub.publish('edit-todo-popup', todo));
             $copyBtn.addEventListener('click', () => addTodo(todo.copy()));
             $deleteBtn.addEventListener('click', () => removeTodo(todo));
@@ -188,6 +208,7 @@ const State = {
     // Subscribe to events
     pubsub.subscribe('init', init);
     pubsub.subscribe('open-project', openProject);
+    pubsub.subscribe('add-project', addProject);
     pubsub.subscribe('edit-project', editProject);
     pubsub.subscribe('remove-project', removeProject);
     pubsub.subscribe('exit', onExit);

@@ -9,6 +9,8 @@ import storage from './storage.js';
 
     // Date values
     var today = new Date();
+    var yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
     var nextWeek = new Date(today);
     nextWeek.setDate(today.getDate() + 7);
     var nextMonth = new Date(today);
@@ -27,9 +29,13 @@ import storage from './storage.js';
     }
 
     function editProject(oldProject, newProject) {
-        const index = projectRefs.findIndex(r => r.equals(oldProject));
-        if (index === -1 || !newProject) {
-            console.warn("Error: Cannot update project.");
+        if (!oldProject || !newProject) {
+            console.warn(`Error: Cannot replace project with missing data.`);
+            return;
+        }
+        const index = projectRefs.findIndex(r => r.id === oldProject.id);
+        if (index === -1) {
+            console.warn(`Error: Cannot replace missing project.`);
             return;
         }
         projectRefs[index].title = newProject.title;
@@ -38,9 +44,13 @@ import storage from './storage.js';
     }
 
     function removeProject(project) {
-        const index = projectRefs.findIndex(r => r.equals(project));
+        if (!project) {
+            console.warn("Error: Cannot remove missing project.");
+            return;
+        }
+        const index = projectRefs.findIndex(r => r.id === project.id);
         if (index === -1) {
-            console.warn("Error: Cannot remove project.");
+            console.warn("Error: Cannot remove missing project.");
             return;
         }
         storage.deleteProject(project.id);
@@ -93,7 +103,7 @@ import storage from './storage.js';
 
         // Add event listeners
         $dailyView.addEventListener('click', () => {
-            pubsub.publish('view-todos', storage.loadTodos((todo) => todo.deadline === today));
+            pubsub.publish('view-todos', storage.loadTodos((todo) => todo.deadline <= today && todo.deadline > yesterday));
         });
         $weeklyView.addEventListener('click', () => {
             pubsub.publish('view-todos', storage.loadTodos((todo) => todo.deadline >= today && todo.deadline <= nextWeek));

@@ -1,67 +1,100 @@
 import { Project } from './project.js';
 
-/* 
- * Use localStorage to save projects.
- * The key, value pair for all items are { "project:" project.id : project }
- */
 const PREFIX = 'project:';
 
+function readProject(key) {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+
+    try {
+        return Project.fromJSON(JSON.parse(raw));
+    } catch (e) {
+        console.warn('Corrupted project in storage:', key);
+        return null;
+    }
+}
+
+function writeProject(project) {
+    localStorage.setItem(PREFIX + project.id, JSON.stringify(project));
+}
+
 const storage = {
-    newProject: function (project, override=false) {
-        if (!override && localStorage.getItem(project.id)) {
-            console.warn("Error: Cannot create project. A project already has that id.");
+
+    /* ---------- CREATE / UPDATE ---------- */
+
+    saveProject(project) {
+        if (!(project instanceof Project)) {
+            console.warn('Attempted to save non-Project:', project);
             return;
         }
-        localStorage.setItem(PREFIX + project.id, JSON.stringify(project));
+        writeProject(project);
     },
-    saveProject: function (project) {
-        localStorage.setItem(PREFIX + project.id, JSON.stringify(project));
+
+    newProject(project, override=false) {
+        const key = PREFIX + project.id;
+
+        if (!override && localStorage.getItem(key)) {
+            console.warn('Project id already exists:', project.id);
+            return;
+        }
+        writeProject(project);
     },
-    loadProject: function (projectID) {
-        const data = JSON.parse(localStorage.getItem(PREFIX + projectID));
-        return data? Project.fromJSON(data) : null; 
-    },
-    deleteProject: function (projectID) {
+
+    deleteProject(projectID) {
         localStorage.removeItem(PREFIX + projectID);
     },
-    loadFirstProject: function () {
+
+
+    /* ---------- LOAD SINGLE ---------- */
+
+    loadProject(projectID) {
+        return readProject(PREFIX + projectID);
+    },
+
+    loadFirstProject() {
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             if (!key.startsWith(PREFIX)) continue;
 
-            const data = JSON.parse(localStorage.getItem(key));
-            return data? Project.fromJSON(data) : null;
+            const project = readProject(key);
+            if (project) return project;
         }
         return null;
     },
-    loadProjectRefs: function () {
-        const refs = [];
+
+
+    /* ---------- LOAD MANY ---------- */
+
+    loadAllProjects() {
+        const projects = [];
+
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             if (!key.startsWith(PREFIX)) continue;
 
-            const project = Project.fromJSON(JSON.parse(localStorage.getItem(key)));
-            refs.push(project.getRef());
+            const project = readProject(key);
+            if (project) projects.push(project);
         }
-        return refs;
-    },
-    loadTodos: function (filterFn) {
-        const todos = [];
-        for (let i = 0; i <  localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (!key.startsWith(PREFIX)) continue;
 
-            const project = Project.fromJSON(JSON.parse(localStorage.getItem(key)));
-            if (filterFn) {
+        return projects;
+    },
+
+    loadProjectRefs() {
+        return this.loadAllProjects().map(p => p.getRef());
+    },
+
+    loadTodos(filterFn=null) {
+        const todos = [];
+
+        for (const project of this.loadAllProjects()) {
+            if (filterFn)
                 todos.push(...project.todos.filter(filterFn));
-            } else {
+            else
                 todos.push(...project.todos);
-            }
         }
-        console.log(todos);
+
         return todos;
     }
 };
 
 export default storage;
-

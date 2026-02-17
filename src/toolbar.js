@@ -3,7 +3,7 @@ import renderer from './render.js';
 
 
 const State = {
-    WAIT: 0,    // Wait for page to load
+    EMPTY: 0,   // No projects yet
     PROJECT: 1, // Edit project
     VIEW: 2,    // View todos from any project
 };
@@ -11,41 +11,28 @@ const State = {
 
 (function() {
     const $toolbar = document.getElementById('toolbar');
-    var state = State.WAIT;
+    var state = State.EMPTY;
     var sortMenuOpen = false;
     
-    function init() {
-        state = State.PROJECT;
-
-        render();
-    }
-
     function openProject() {
-        if (state === State.WAIT) return;
-
         state = State.PROJECT;
 
         render();
     }
 
     function viewTodos() {
-        if (state === State.WAIT) return;
-
         state = State.VIEW;
 
         render();
     }
 
     function clickSortMenu() {
-        if (state === State.WAIT) return;
-
         sortMenuOpen = !sortMenuOpen;
+        
         render();
     }
 
     function render() {
-        if (state === State.WAIT) return;
-
         renderer.clearContents($toolbar);
 
         if (state === State.PROJECT) {
@@ -113,7 +100,7 @@ const State = {
     }
 
     // Subscribe to events
-    pubsub.subscribe('init', init);
+    pubsub.subscribe('init', openProject);
     pubsub.subscribe('open-project', openProject);
     pubsub.subscribe('view-todos', viewTodos);
 

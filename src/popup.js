@@ -1,5 +1,6 @@
 import renderer from './render.js';
 import pubsub from './pubsub.js';
+import storage from './storage.js';
 import { TodoItem, Project } from './project.js';
 
 
@@ -34,7 +35,7 @@ import { TodoItem, Project } from './project.js';
         if (typeof resolveFn === 'function') {
             resolveFn();
         } else {
-            console.warn(`Invalid resolution function: ${resolveFn}`);
+            console.warn(`Invalid resolution function.`);
         }
 
         // Remove popup
@@ -93,10 +94,15 @@ import { TodoItem, Project } from './project.js';
             const $title = renderer.addElement($form, 'input', '', ['title-field'], { value: todo.title, required: true });
             renderer.addElement($form, 'h6', 'Description', ['label']);
 
-            const $desc = renderer.addElement($form, 'textarea', '', ['desc-field'], { value: todo.desc });
+            const $desc = renderer.addElement($form, 'textarea', '', ['desc-field']);
+            $desc.value = todo.desc || '';
             renderer.addElement($form, 'h6', 'Due Date', ['label']);
 
-            const $deadline = renderer.addElement($form, 'input', '', ['deadline-field'], { type: 'date', value: todo.deadline, required: true });
+            // Format date for HTML date input (YYYY-MM-DD)
+            const deadlineStr = todo.deadline instanceof Date 
+                ? todo.deadline.toISOString().split('T')[0] 
+                : todo.deadline;
+            const $deadline = renderer.addElement($form, 'input', '', ['deadline-field'], { type: 'date', value: deadlineStr, required: true });
             renderer.addElement($form, 'h6', 'Priority', ['label']);
 
             const $priority = renderer.addElement($form, 'select', '', ['priority-field'], { value: todo.priority });
@@ -157,6 +163,8 @@ import { TodoItem, Project } from './project.js';
                     $desc.value,
                     tags
                 );
+                // Save project to storage before publishing
+                storage.saveProject(newProject);
                 pubsub.publish('add-project', newProject);
             });
         },
@@ -172,7 +180,8 @@ import { TodoItem, Project } from './project.js';
             const $title = renderer.addElement($form, 'input', '', ['title-field'], { value: project.title, required: true });
             renderer.addElement($form, 'h5', 'Description', ['label']);
 
-            const $desc = renderer.addElement($form, 'textarea', '', ['desc-field'], { value: project.desc });
+            const $desc = renderer.addElement($form, 'textarea', '', ['desc-field']);
+            $desc.value = project.desc || '';
             renderer.addElement($form, 'h5', 'Tags', ['label']);
 
             const $tagContainer = renderer.addElement($form, 'div', '', ['tag-container']);
