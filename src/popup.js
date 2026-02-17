@@ -43,6 +43,7 @@ import { TodoItem, Project } from './project.js';
     }
 
     const popup = {
+
         newTodo: function () {
             // Create form element
             const $form = document.createElement('form');
@@ -80,6 +81,7 @@ import { TodoItem, Project } from './project.js';
                 pubsub.publish('add-todo', newTodo);
             });
         },
+
         editTodo: function (todo) {
             // Create form element
             const $form = document.createElement('form');
@@ -116,9 +118,10 @@ import { TodoItem, Project } from './project.js';
                     todo.complete,
                     todo.id
                 );
-                pubsub.publish('edit-todo', { 'old': todo, 'new': newTodo });
+                pubsub.publish('edit-todo', todo, newTodo);
             });
         },
+
         newProject: function () {
             // Create form element
             const $form = document.createElement('form');
@@ -157,6 +160,7 @@ import { TodoItem, Project } from './project.js';
                 pubsub.publish('add-project', newProject);
             });
         },
+
         editProject: function (project) {
             // Create form element
             const $form = document.createElement('form');
@@ -202,11 +206,14 @@ import { TodoItem, Project } from './project.js';
                 const newProject = new Project(
                     $title.value,
                     $desc.value,
-                    tags
+                    tags,
+                    project.todos,
+                    project.id
                 );
-                pubsub.publish('edit-project', { 'old': project, 'new': newProject });
+                pubsub.publish('edit-project', project, newProject);
             });
         },
+
         removeProject: function (project) {
             // Create form element
             const $form = document.createElement('form');

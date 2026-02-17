@@ -20,28 +20,35 @@ const State = {
     var saved = true;
 
     function init() {
-        setCurrentProject(storage.loadFirstProject() || Project.getDefault());
-        state = State.PROJECT;
-
+        var project = storage.loadFirstProject();
+        if (!(project instanceof Project)) {
+            project = Project.getDefault();
+            storage.saveProject(project);
+        }
+        setCurrentProject(project);
         render();
     }
 
     function setCurrentProject(project) {
-        if (!(project instanceof Project)) return;
-
+        state = State.PROJECT;
         currentProject = project;
         currentTodos = project.todos;
         header = project.title;
     }
 
+    function setTodosViewed(todos, viewMode) {
+        state = State.VIEW;
+        currentProject = null;
+        currentTodos = todos;
+        header = viewMode;
+    }
+
     function openProject(project) {
         if (project.equals(currentProject)) return;
         if (!(project instanceof Project) || state === State.WAIT) {
-            console.warn("Error: Cannot open project.");
+            console.warn(`Error: Cannot open project: ${project}`);
             return;
         }
-        state = State.PROJECT;
-
         if (currentProject && !saved) {
             storage.saveProject(currentProject);
         }
@@ -49,8 +56,13 @@ const State = {
         render();
     }
 
-    function editProject(projectData) {
-        //...
+    function editProject(oldProject, newProject) {
+        if (!(newProject instanceof Project) || state === State.WAIT) {
+            console.warn(`Error: Cannot replace project with: ${newProject}`);
+            return;
+        }
+        setCurrentProject(newProject);
+        render();
     }
 
     function removeProject(project) {
@@ -61,33 +73,27 @@ const State = {
 
     function onExit() {
         if (!currentProject) {
-            console.warn("Error: Cannot save project.");
+            console.warn(`Error: Cannot save project: ${currentProject}`);
             return;
         }
         storage.saveProject(currentProject);
     }
 
-    function viewTodos(todoData) {
-        // param: { todos: TodoList, title: TodoName }
-        if (!(todoData.todos instanceof Array) || state === State.WAIT) {
-            console.warn("Error: Cannot view todos.");
+    function viewTodos(todos) {
+        if (!(todos instanceof Array) || state === State.WAIT) {
+            console.warn(`Error: Cannot view todos: ${todos}`);
             return;
         }
-        state = State.VIEW;
-
         if (currentProject && !saved) {
             storage.saveProject(currentProject);
         }
-        currentProject = null;
-        currentTodos = todoData.todos;
-        header = todoData.title;
-
+        setTodosViewed(todos);
         render();
     }
 
     function addTodo(todo) {
         if (!(todo instanceof TodoItem) || state !== State.PROJECT) {
-            console.warn("Error: Cannot add todo item.");
+            console.warn(`Error: Cannot add todo item: ${todo}`);
             return;
         }
         currentTodos.push(todo);
@@ -97,18 +103,17 @@ const State = {
     function removeTodo(todo) {
         const index = currentTodos.findIndex(t => t.equals(todo));
         if (index === -1 || state !== State.PROJECT) {
-            console.warn("Error: Cannot remove todo item.");
+            console.warn(`Error: Cannot remove todo item: ${todo}`);
             return;
         }
         currentTodos.splice(index, 1);
         saved = false;
     }
 
-    function editTodo(todoData) {
-        // param: { old: OldTodo, new: NewTodo }
-        const index = currentTodos.findIndex(t => t.equals(todoData.old));
-        if (index === -1 || !(todoData.new instanceof TodoItem) || state !== State.PROJECT) {
-            console.warn("Error: Cannot edit todo item.");
+    function editTodo(oldTodo, newTodo) {
+        const index = currentTodos.findIndex(t => t.equals(oldTodo));
+        if (index === -1 || !(newTodo instanceof TodoItem) || state !== State.PROJECT) {
+            console.warn(`Error: Cannot replace todo item with: ${newTodo}`);
             return;
         }
         currentTodos.splice(index, 1, todoData.new);

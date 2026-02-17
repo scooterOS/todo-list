@@ -26,13 +26,13 @@ import storage from './storage.js';
         render();
     }
 
-    function editProject(projectData) {
-        const index = projectRefs.findIndex(r => r.equals(project.old));
-        if (index === -1 || !projectData.new) {
+    function editProject(oldProject, newProject) {
+        const index = projectRefs.findIndex(r => r.equals(oldProject));
+        if (index === -1 || !newProject) {
             console.warn("Error: Cannot update project.");
             return;
         }
-        projectRefs[index].title = projectData.new.title;
+        projectRefs[index].title = newProject.title;
 
         render();
     }

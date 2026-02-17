@@ -58,6 +58,7 @@ const storage = {
                 todos.push(...project.todos);
             }
         }
+        console.log(todos);
         return todos;
     }
 };
