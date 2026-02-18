@@ -7,14 +7,27 @@ import storage from './storage.js';
     const $sidebar = document.getElementById('sidebar');
     var projectRefs = [];
 
-    // Date values
-    var today = new Date();
-    var yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-    var nextWeek = new Date(today);
-    nextWeek.setDate(today.getDate() + 7);
-    var nextMonth = new Date(today);
-    nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
+    // Helper function to normalize a date to start of day (midnight) for date-only comparisons
+    function startOfDay(date) {
+        const normalized = new Date(date);
+        normalized.setHours(0, 0, 0, 0);
+        return normalized;
+    }
+
+    // Helper function to get date-only comparison values
+    function getDateRanges() {
+        const now = new Date();
+        const today = startOfDay(now);
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+        const endOfWeek = new Date(today);
+        endOfWeek.setDate(today.getDate() + 6); // Today + 6 more days = 7 days total
+        const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
+        
+        return { today, yesterday, tomorrow, endOfWeek, nextMonth };
+    }
     
     function init() {
         projectRefs = storage.loadProjectRefs();
@@ -103,16 +116,32 @@ import storage from './storage.js';
 
         // Add event listeners
         $dailyView.addEventListener('click', () => {
-            pubsub.publish('view-todos', storage.loadTodos((todo) => todo.deadline <= today && todo.deadline > yesterday));
+            const { today } = getDateRanges();
+            pubsub.publish('view-todos', storage.loadTodos((todo) => {
+                const todoDeadline = startOfDay(todo.deadline);
+                return todoDeadline.getTime() === today.getTime();
+            }));
         });
         $weeklyView.addEventListener('click', () => {
-            pubsub.publish('view-todos', storage.loadTodos((todo) => todo.deadline >= today && todo.deadline <= nextWeek));
+            const { today, endOfWeek } = getDateRanges();
+            pubsub.publish('view-todos', storage.loadTodos((todo) => {
+                const todoDeadline = startOfDay(todo.deadline);
+                return todoDeadline >= today && todoDeadline <= endOfWeek;
+            }));
         });
         $monthlyView.addEventListener('click', () => {
-            pubsub.publish('view-todos', storage.loadTodos((todo) => todo.deadline >= today && todo.deadline <= nextMonth));
+            const { today, nextMonth } = getDateRanges();
+            pubsub.publish('view-todos', storage.loadTodos((todo) => {
+                const todoDeadline = startOfDay(todo.deadline);
+                return todoDeadline >= today && todoDeadline <= nextMonth;
+            }));
         });
         $pastView.addEventListener('click', () => {
-            pubsub.publish('view-todos', storage.loadTodos((todo) => todo.deadline < today));
+            const { today } = getDateRanges();
+            pubsub.publish('view-todos', storage.loadTodos((todo) => {
+                const todoDeadline = startOfDay(todo.deadline);
+                return todoDeadline < today;
+            }));
         });
         $allView.addEventListener('click', () => pubsub.publish('view-todos', storage.loadTodos()));
     }
