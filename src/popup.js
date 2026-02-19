@@ -73,11 +73,19 @@ import { TodoItem, Project } from './project.js';
 
             // Launch popup form
             launch($form, () => {
+                // Parse date string (YYYY-MM-DD) to Date object in local timezone
+                const dateStr = $deadline.value;
+                let deadline = null;
+                if (dateStr) {
+                    const [year, month, day] = dateStr.split('-').map(Number);
+                    deadline = new Date(year, month - 1, day); // month is 0-indexed
+                }
+                
                 const newTodo = new TodoItem(
                     $title.value,
                     $desc.value,
-                    $deadline.value,
-                    $priority.value,
+                    deadline,
+                    parseInt($priority.value, 10),
                 );
                 pubsub.publish('add-todo', newTodo);
             });
@@ -116,11 +124,19 @@ import { TodoItem, Project } from './project.js';
 
             // Launch popup form
             launch($form, () => {
+                // Parse date string (YYYY-MM-DD) to Date object in local timezone
+                const dateStr = $deadline.value;
+                let deadline = null;
+                if (dateStr) {
+                    const [year, month, day] = dateStr.split('-').map(Number);
+                    deadline = new Date(year, month - 1, day); // month is 0-indexed
+                }
+                
                 const newTodo = new TodoItem(
                     $title.value,
                     $desc.value,
-                    $deadline.value,
-                    $priority.value,
+                    deadline,
+                    parseInt($priority.value, 10),
                     todo.complete,
                     todo.id
                 );
@@ -128,42 +144,91 @@ import { TodoItem, Project } from './project.js';
             });
         },
 
+        createTagEditor: function($container, initialTags = []) {
+
+            const tagBtn = renderer.addElement($container, 'button', '+', ['add-tag-btn'], { type: 'button' });
+
+            function normalize(value) {
+                return value.trim().toLowerCase();
+            }
+
+            function getAllTags(exclude = null) {
+                return Array.from($container.querySelectorAll('.tag'))
+                    .filter(el => el !== exclude)
+                    .map(el => normalize(el.value));
+            }
+
+            function createTag(value = '') {
+                const input = renderer.addElement($container, 'input', '', ['tag'], { value });
+                input.placeholder = 'Enter tag';
+                input.select();
+
+                input.addEventListener('blur', () => {
+                    if (!input.value.trim() || getAllTags(input).includes(normalize(input.value))) {
+                        input.remove();
+                    }
+                });
+
+                input.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        createTag();
+                    }
+                });
+
+                input.addEventListener('contextmenu', e => {
+                    e.preventDefault();
+                    input.remove();
+                });
+
+                return input;
+            }
+
+            tagBtn.addEventListener('click', e => {
+                e.preventDefault();
+                createTag();
+            });
+
+            // Preload tags
+            initialTags.forEach(tag => createTag(tag));
+
+            return {
+                getTags() {
+                    const map = new Map();
+                    $container.querySelectorAll('.tag').forEach(tag => {
+                        const v = tag.value.trim();
+                        if (!v) return;
+                        const key = normalize(v);
+                        if (!map.has(key)) map.set(key, v);
+                    });
+                    return Array.from(map.values());
+                }
+            };
+        },
+
         newProject: function () {
             // Create form element
             const $form = document.createElement('form');
             $form.id = 'new-project';
 
+            // Populate form
             renderer.addElement($form, 'legend', 'New Project');
             renderer.addElement($form, 'h5', 'Name', ['label']);
-
             const $title = renderer.addElement($form, 'input', '', ['title-field'], { required: true });
             renderer.addElement($form, 'h5', 'Description', ['label']);
-
             const $desc = renderer.addElement($form, 'textarea', '', ['desc-field']);
             renderer.addElement($form, 'h5', 'Tags', ['label']);
-
-            const $tags = renderer.addElement($form, 'div', '', ['tag-container']);
-            const $tagBtn = renderer.addElement($tags, 'button', '+', ['add-tag-btn']);
-
-            // Add event listener
-            $tagBtn.addEventListener('click', () => {
-                renderer.addElement($tags, 'input', tag, ['tag']);
-            });
+            const $tagContainer = renderer.addElement($form, 'div', '', ['tag-container']);
+            const tagEditor = popup.createTagEditor($tagContainer);
 
             // Launch popup form
             launch($form, () => {
-                const tagElems = $tags.querySelectorAll('.tag');
-                const tags = [];
-                
-                for (let i = 0; i < tagElems.length; i++) {
-                    tags.push(tagElems[i].value);
-                }
                 const newProject = new Project(
                     $title.value,
                     $desc.value,
-                    tags
+                    tagEditor.getTags()
                 );
-                // Save project to storage before publishing
+                // Open and save new project
                 storage.saveProject(newProject);
                 pubsub.publish('add-project', newProject);
             });
@@ -174,51 +239,27 @@ import { TodoItem, Project } from './project.js';
             const $form = document.createElement('form');
             $form.id = 'new-project';
 
+            // Populate form
             renderer.addElement($form, 'legend', 'Edit Project');
             renderer.addElement($form, 'h5', 'Name', ['label']);
-
             const $title = renderer.addElement($form, 'input', '', ['title-field'], { value: project.title, required: true });
             renderer.addElement($form, 'h5', 'Description', ['label']);
-
             const $desc = renderer.addElement($form, 'textarea', '', ['desc-field']);
             $desc.value = project.desc || '';
             renderer.addElement($form, 'h5', 'Tags', ['label']);
-
             const $tagContainer = renderer.addElement($form, 'div', '', ['tag-container']);
-            const $tagBtn = renderer.addElement($tagContainer, 'button', '+', ['add-tag-btn']);
-
-            // Add tag elements
-            for (let tag of project.tags) {
-                renderer.addElement($tagContainer, 'input', '', ['tag'], { value: tag });
-            }
-
-            // Add event listeners
-            $tagBtn.addEventListener('click', () => {
-                const $tag = renderer.addElement($tagContainer, 'input', '', ['tag']);
-                $tag.select();
-                $tag.addEventListener('click', (ev) => {
-                    if (ev.button === 2) {
-                        ev.preventDefault();
-                        $tag.remove();
-                    }
-                });
-            });
+            const tagEditor = createTagEditor($tagContainer, project.tags);
 
             // Launch popup form
             launch($form, () => {
-                const tagElems = $tagContainer.querySelectorAll('.tag');
-                const tags = [];
-                
-                for (let i = 0; i < tagElems.length; i++) {
-                    tags.push(tagElems[i].value);
-                }
                 const newProject = new Project(
                     $title.value,
                     $desc.value,
-                    tags,
+                    tagEditor.getTags(),
                     project.todos,
                     project.id
                 );
+                // Open updated project
                 pubsub.publish('edit-project', project, newProject);
             });
         },
@@ -228,7 +269,7 @@ import { TodoItem, Project } from './project.js';
             const $form = document.createElement('form');
             $form.id = 'remove-project';
 
-            // Add element
+            // Populate form
             renderer.addElement($form, 'h5', `Are you sure you want to delete ${project.title}?`);
 
             // Launch popup form
