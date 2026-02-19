@@ -91,7 +91,16 @@ const State = {
     function viewTodos(todos) {
         if (todos === null) return;
 
-        // Load todos
+        // View todos
+        setTodosViewed(todos);
+        render();
+    }
+
+    function searchTodos(inputStr) {
+        const todos = storage.loadTodos((todo) => {
+            return todo.title.includes(inputStr) || todo.desc.includes(inputStr);
+        });
+        // View todos
         setTodosViewed(todos);
         render();
     }
@@ -213,6 +222,7 @@ const State = {
     pubsub.subscribe('remove-project', removeProject);
     pubsub.subscribe('exit', onExit);
     pubsub.subscribe('view-todos', viewTodos);
+    pubsub.subscribe('search-todos', searchTodos);
     pubsub.subscribe('add-todo', addTodo);
     pubsub.subscribe('edit-todo', editTodo);
     pubsub.subscribe('sort-alpha', sortAlpha);

@@ -72,7 +72,13 @@ const State = {
         // Add event listeners
         $newProject.addEventListener('click', () => pubsub.publish('new-project-popup'));
         $sortTodos.addEventListener('click', () => clickSortMenu());
-        $search.addEventListener('click', () => pubsub.publish('search-todos', $searchbar.textContent));
+        $search.addEventListener('click', () => pubsub.publish('search-todos', $searchbar.value.trim()));
+        $searchbar.addEventListener('keydown', ev => {
+            if (ev.key === 'Enter') {
+                ev.preventDefault();
+                pubsub.publish('search-todos', $searchbar.value.trim());
+            }
+        });
         $searchbar.addEventListener('click', () => $searchbar.select());
     }
 
