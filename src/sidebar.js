@@ -119,33 +119,34 @@ import storage from './storage.js';
         // Add event listeners
         $dailyView.addEventListener('click', () => {
             const { today } = getDateRanges();
-            pubsub.publish('view-todos', storage.loadTodos((todo) => {
+
+            pubsub.publish('view-todos', 'Daily', storage.loadTodos((todo) => {
                 const todoDeadline = startOfDay(todo.deadline);
                 return todoDeadline.getTime() === today.getTime();
             }));
         });
         $weeklyView.addEventListener('click', () => {
             const { today, endOfWeek } = getDateRanges();
-            pubsub.publish('view-todos', storage.loadTodos((todo) => {
+            pubsub.publish('view-todos', 'This Week', storage.loadTodos((todo) => {
                 const todoDeadline = startOfDay(todo.deadline);
                 return todoDeadline >= today && todoDeadline <= endOfWeek;
             }));
         });
         $monthlyView.addEventListener('click', () => {
             const { today, nextMonth } = getDateRanges();
-            pubsub.publish('view-todos', storage.loadTodos((todo) => {
+            pubsub.publish('view-todos', 'This Month', storage.loadTodos((todo) => {
                 const todoDeadline = startOfDay(todo.deadline);
                 return todoDeadline >= today && todoDeadline <= nextMonth;
             }));
         });
         $pastView.addEventListener('click', () => {
             const { today } = getDateRanges();
-            pubsub.publish('view-todos', storage.loadTodos((todo) => {
+            pubsub.publish('view-todos', 'Past', storage.loadTodos((todo) => {
                 const todoDeadline = startOfDay(todo.deadline);
                 return todoDeadline < today;
             }));
         });
-        $allView.addEventListener('click', () => pubsub.publish('view-todos', storage.loadTodos()));
+        $allView.addEventListener('click', () => pubsub.publish('view-todos', 'All', storage.loadTodos()));
     }
 
     // Subscribe to events
@@ -153,5 +154,5 @@ import storage from './storage.js';
     pubsub.subscribe('add-project', addProject);
     pubsub.subscribe('edit-project', editProject);
     pubsub.subscribe('remove-project', removeProject);
-    
+
 })();

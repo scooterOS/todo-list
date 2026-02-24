@@ -12,7 +12,7 @@ import { TodoItem, Project } from './project.js';
 
         // Add form to popup element
         const $body = document.querySelector('body');
-        const $popup = renderer.addElement($body, 'div', '', ['overlay'], { id: 'popup' });
+        const $popup = renderer.addElement($body, 'div', '', [], { id: 'popup' });
         $popup.append($form);
         
         // Add submit and cancel buttons

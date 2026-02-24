@@ -22,7 +22,7 @@ const State = {
         var project = storage.loadFirstProject();
         if (!project) {
             project = Project.getDefault();
-            storage.saveProject(project);
+            pubsub.publish('add-project', project);
         }
         setCurrentProject(project);
         render();
@@ -88,20 +88,22 @@ const State = {
         storage.saveProject(currentProject);
     }
 
-    function viewTodos(todos) {
+    function viewTodos(viewMode, todos) {
         if (todos === null) return;
 
         // View todos
-        setTodosViewed(todos);
+        console.log()
+        setTodosViewed(todos, viewMode);
         render();
     }
 
     function searchTodos(inputStr) {
+        // Load todos
         const todos = storage.loadTodos((todo) => {
             return todo.title.includes(inputStr) || todo.desc.includes(inputStr);
         });
         // View todos
-        setTodosViewed(todos);
+        setTodosViewed(todos, `Search result for "${inputStr}"`);
         render();
     }
 
@@ -172,14 +174,50 @@ const State = {
         renderer.clearContents($content);
 
         if (state === State.EMPTY) {
-            const $noProject = renderer.addElement($content, 'div', '', ['no-project']);
-            renderer.addElement($noProject, 'h2', 'You currently have no projects! 😧 Click here to add a project.');
-            $noProject.addEventListener('click', () => pubsub.publish('new-project-popup'));
+            renderEmpty();
             return;
         }
+        if (state === State.PROJECT) {
+            renderProject();
+            return;
+        }
+        if (state === State.VIEW) {
+            renderView();
+            return;
+        }
+    }
 
-        const $header = renderer.addElement($content, 'div', '', ['title']);
+    function renderEmpty() {
+        const $noProject = renderer.addElement($content, 'div', '', ['no-project']);
+        renderer.addElement($noProject, 'h2', 'You currently have no projects! 😧 Click here to add a project.');
+        $noProject.addEventListener('click', () => pubsub.publish('new-project-popup'));
+    }
+
+    function renderProject() {
+        // Add content header
+        const $header = renderer.addElement($content, 'div', '', ['project-title', 'row']);
         renderer.addElement($header, 'h1', header);
+        const $buttonList = renderer.addElement($header, 'span', '', ['button-list']);
+        const $newTodo = renderer.addElement($buttonList, 'button', '', ['new-todo', 'icon'], { alt: 'New Task', title: 'new task' });
+        const $editProject = renderer.addElement($buttonList, 'button', '', ['edit-project', 'icon'], { alt: 'Edit Project', title: 'edit project' });
+        const $deleteProject = renderer.addElement($buttonList, 'button', '', ['delete-project', 'icon'], { alt: 'Delete Project', title: 'delete project' });
+
+        // Add project description
+        const $desc = renderer.addElement($content, 'div', '', ['project-desc']);
+        renderer.addElement($desc, 'h4', currentProject.desc);
+
+        // Add tags
+        const $tagRow = renderer.addElement($content, 'div', '', ['row']);
+        for (let tag of currentProject.tags) {
+            renderer.addElement($tagRow, 'p', tag, ['project-tag']);
+        }
+
+        // Add event listeners
+        $newTodo.addEventListener('click', () => pubsub.publish('new-todo-popup'));
+        $editProject.addEventListener('click', () => pubsub.publish('edit-project-popup', currentProject));
+        $deleteProject.addEventListener('click', () => pubsub.publish('remove-project-popup', currentProject));
+
+        // Add container for todo items
         const $todoContainer = renderer.addElement($content, 'div', '', ['todo-container']);
 
         for (let todo of currentTodos) {
@@ -195,12 +233,10 @@ const State = {
             // Mark if complete
             $checkbox.checked = todo.complete;
 
-            if (state !== State.PROJECT) continue;
-
             // Add buttons if editing project
-            const $editBtn = renderer.addElement($todoRow, 'button', '', ['edit-btn']);
-            const $copyBtn = renderer.addElement($todoRow, 'button', '', ['copy-btn']);
-            const $deleteBtn = renderer.addElement($todoRow, 'button', '', ['delete-btn']);
+            const $editTodo = renderer.addElement($todoRow, 'button', '', ['edit-todo', 'icon'], { alt: 'Edit Task', title: 'edit task' });
+            const $copyTodo = renderer.addElement($todoRow, 'button', '', ['copy-todo', 'icon'], { alt: 'Copy Task', title: 'copy task' });
+            const $deleteTodo = renderer.addElement($todoRow, 'button', '', ['delete-todo', 'icon'], { alt: 'Delete Task', title: 'delete task' });
 
             // Add event listeners
             $checkbox.addEventListener('click', () => {
@@ -208,9 +244,30 @@ const State = {
                 storage.saveProject(currentProject);
                 render();
             });
-            $editBtn.addEventListener('click', () => pubsub.publish('edit-todo-popup', todo));
-            $copyBtn.addEventListener('click', () => addTodo(todo.copy()));
-            $deleteBtn.addEventListener('click', () => removeTodo(todo));
+            $editTodo.addEventListener('click', () => pubsub.publish('edit-todo-popup', todo));
+            $copyTodo.addEventListener('click', () => addTodo(todo.copy()));
+            $deleteTodo.addEventListener('click', () => removeTodo(todo));
+        }
+    }
+
+    function renderView() {
+
+        const $header = renderer.addElement($content, 'div', '', ['title']);
+        renderer.addElement($header, 'h1', header);
+        const $todoContainer = renderer.addElement($content, 'div', '', ['todo-container']);
+
+        for (let todo of currentTodos) {
+            // Add todo elements
+            const $todoElem = renderer.addElement($todoContainer, 'div', '', ['todo-item']);
+            const $todoRow = renderer.addElement($todoElem, 'div', '', ['row']);
+            const $checkbox = renderer.addElement($todoRow, 'input', '', [], { type: 'checkbox' });
+            renderer.addElement($todoRow, 'h2', todo.title, ['todo-title']);
+            renderer.addElement($todoRow, 'span', todo.getDeadlineText(), ['todo-deadline']);
+            renderer.addElement($todoRow, 'span', todo.getPriorityText(), ['todo-priority']);
+            renderer.addElement($todoElem, 'span', todo.desc, ['todo-desc']);
+
+            // Mark if complete
+            $checkbox.checked = todo.complete;
         }
     }
 
@@ -230,8 +287,4 @@ const State = {
     pubsub.subscribe('sort-priority', sortPriority);
     pubsub.subscribe('sort-completed', sortCompleted);
 
-    // Forward events
-    pubsub.subscribe('edit-project-request', () => pubsub.publish('edit-project-popup', currentProject));
-    pubsub.subscribe('remove-project-request', () => pubsub.publish('remove-project-popup', currentProject));
-    
 })();

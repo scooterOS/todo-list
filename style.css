@@ -41,7 +41,7 @@ textarea {
 
 #container {
     display: grid;
-    grid-template-rows: 100px 1fr;
+    grid-template-rows: 90px 1fr;
     grid-template-columns: auto 1fr;
     width: 100vw;
     min-height: 100vh;
@@ -50,6 +50,8 @@ textarea {
 .row {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 .column {
@@ -59,6 +61,13 @@ textarea {
 
 .title {
     margin-bottom: 4px;
+}
+
+.option {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    text-align: left;
+    align-items: center;
 }
 
 button {
@@ -138,18 +147,34 @@ hr {
 }
 
 .icon.new-project {
-    background-image: url('./res/img/plus-box-outline.svg');
+    background-image: url('./res/img/plus-circle.svg');
 }
 
 .icon.edit-project {
     background-image: url('./res/img/text-box-edit-outline.svg');
 }
 
-.icon.copy {
+.icon.delete-project {
+    background-image: url('./res/img/delete-forever.svg');
+}
+
+.icon.new-todo {
+    background-image: url('./res/img/plus-box-outline.svg');
+}
+
+.icon.edit-todo {
+    background-image: url('./res/img/square-edit-outline.svg');
+}
+
+.icon.copy-todo {
     background-image: url('./res/img/content-copy.svg');
 }
 
-.icon.sort {
+.icon.delete-todo {
+    background-image: url('./res/img/trash-can.svg');
+}
+
+.icon.sort-todos {
     background-image: url('./res/img/sort-variant.svg');
 }
 
@@ -180,11 +205,14 @@ hr {
 /* toolbar */
 
 #header {
+    position: sticky;
+    top: 0;
     display: flex;
     align-items: center;
     grid-row: 1 / 2;
     grid-column: 1 / 3;
     background-color: rgb(166, 231, 243);
+    z-index: 10;
 }
 
 #toolbar {
@@ -227,33 +255,48 @@ hr {
     text-indent: 12px;
 }
 
-.option {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    text-align: left;
-}
-
 /* content */
 
 #content {
     text-wrap: wrap;
-    padding: 8px;
+    padding: 20px 15px;
+}
+
+.project-title {
+    justify-content: space-between;
+}
+
+.project-tag {
+    color: rgb(7, 63, 73);
+    background-color: rgb(212, 240, 228);
+    border-radius: 20px;
+    padding: 6px 8px;
+    margin: 6px;
+}
+
+.project-tag::before {
+    content: '#';
 }
 
 .todo-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: 1fr;
+    gap: 6px;
     padding: 15px;
 }
 
+.todo-container.grid {
+    grid-template-columns: (auto-fit, minmax(300px, 1fr));
+}
+
 .todo-item {
-    border: 2px solid blue;
+    border: 2px solid rgb(5, 5, 85);
     border-radius: 8px;
 }
 
 /* popup */
 
-.overlay {
+#popup {
     position: fixed;
     display: flex;
     align-items: center;
@@ -263,12 +306,13 @@ hr {
     z-index: 9999;
 }
 
-body:has(.overlay) {
+body:has(#popup) {
     overflow: hidden;
 }
 
 .dialog {
     background: white;
+    width: clamp(200px, 75vw, 500px);
     padding: 1.5rem;
     border-radius: 12px;
 }
