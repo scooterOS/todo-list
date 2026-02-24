@@ -248,7 +248,7 @@ import { TodoItem, Project } from './project.js';
             $desc.value = project.desc || '';
             renderer.addElement($form, 'h5', 'Tags', ['label']);
             const $tagContainer = renderer.addElement($form, 'div', '', ['tag-container']);
-            const tagEditor = createTagEditor($tagContainer, project.tags);
+            const tagEditor = popup.createTagEditor($tagContainer, project.tags);
 
             // Launch popup form
             launch($form, () => {

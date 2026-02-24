@@ -147,59 +147,59 @@ hr {
 }
 
 .icon.new-project {
-    background-image: url('./res/img/plus-circle.svg');
+    background-image: url('./img/plus-circle.svg');
 }
 
 .icon.edit-project {
-    background-image: url('./res/img/text-box-edit-outline.svg');
+    background-image: url('./img/text-box-edit-outline.svg');
 }
 
 .icon.delete-project {
-    background-image: url('./res/img/delete-forever.svg');
+    background-image: url('./img/delete-forever.svg');
 }
 
 .icon.new-todo {
-    background-image: url('./res/img/plus-box-outline.svg');
+    background-image: url('./img/plus-box-outline.svg');
 }
 
 .icon.edit-todo {
-    background-image: url('./res/img/square-edit-outline.svg');
+    background-image: url('./img/square-edit-outline.svg');
 }
 
 .icon.copy-todo {
-    background-image: url('./res/img/content-copy.svg');
+    background-image: url('./img/content-copy.svg');
 }
 
 .icon.delete-todo {
-    background-image: url('./res/img/trash-can.svg');
+    background-image: url('./img/trash-can.svg');
 }
 
 .icon.sort-todos {
-    background-image: url('./res/img/sort-variant.svg');
+    background-image: url('./img/sort-variant.svg');
 }
 
 .icon.search {
-    background-image: url('./res/img/magnify.svg');
+    background-image: url('./img/magnify.svg');
 }
 
 .icon.daily-view {
-    background-image: url('./res/img/notebook.svg');
+    background-image: url('./img/notebook.svg');
 }
 
 .icon.weekly-view {
-    background-image: url('./res/img/calendar_view_week.svg');
+    background-image: url('./img/calendar_view_week.svg');
 }
 
 .icon.monthly-view {
-    background-image: url('./res/img/calendar-month-outline.svg');
+    background-image: url('./img/calendar-month-outline.svg');
 }
 
 .icon.past-view {
-    background-image: url('./res/img/archive.svg');
+    background-image: url('./img/archive.svg');
 }
 
 .icon.all-view {
-    background-image: url('./res/img/all_inclusive.svg');
+    background-image: url('./img/all_inclusive.svg');
 }
 
 /* toolbar */
