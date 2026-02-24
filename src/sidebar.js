@@ -77,11 +77,12 @@ import storage from './storage.js';
         renderer.clearContents($sidebar);
 
         const $projectCol = renderer.addElement($sidebar, 'div', '', ['column']);
-        renderer.addElement($projectCol, 'h1', 'Projects', ['title']);
+        renderer.addElement($projectCol, 'h2', 'Projects', ['title']);
 
         // Add project elements and event listeners
         for (let ref of projectRefs) {
-            const $project = renderer.addElement($projectCol, 'h2', ref.title, ['project-label']);
+            const $project = renderer.addElement($projectCol, 'button', '', ['project-label']);
+            renderer.addElement($project, 'h3', ref.title);
             $project.addEventListener('click', () => {
                 const project = storage.loadProject(ref.id);
                 if (project) {
@@ -89,30 +90,31 @@ import storage from './storage.js';
                 }
             });
         }
+        renderer.addElement($sidebar, 'hr');
 
         // Add view options
         const $viewCol = renderer.addElement($sidebar, 'div', '', ['column']);
-        renderer.addElement($viewCol, 'h1', 'View', ['title']);
+        renderer.addElement($viewCol, 'h2', 'View', ['title']);
 
-        const $dailyView = renderer.addElement($viewCol, 'div', '', ['option']);
+        const $dailyView = renderer.addElement($viewCol, 'button', '', ['option']);
         renderer.addElement($dailyView, 'div', '', ['daily-view', 'icon']);
-        renderer.addElement($dailyView, 'h2', 'Today');
+        renderer.addElement($dailyView, 'h3', 'Today');
 
-        const $weeklyView = renderer.addElement($viewCol, 'div', '', ['option']);
+        const $weeklyView = renderer.addElement($viewCol, 'button', '', ['option']);
         renderer.addElement($weeklyView, 'div', '', ['weekly-view', 'icon']);
-        renderer.addElement($weeklyView, 'h2', 'This Week');
+        renderer.addElement($weeklyView, 'h3', 'This Week');
 
-        const $monthlyView = renderer.addElement($viewCol, 'div', '', ['option']);
+        const $monthlyView = renderer.addElement($viewCol, 'button', '', ['option']);
         renderer.addElement($monthlyView, 'div', '', ['monthly-view', 'icon']);
-        renderer.addElement($monthlyView, 'h2', 'This Month');
+        renderer.addElement($monthlyView, 'h3', 'This Month');
 
-        const $pastView = renderer.addElement($viewCol, 'div', '', ['option']);
+        const $pastView = renderer.addElement($viewCol, 'button', '', ['option']);
         renderer.addElement($pastView, 'div', '', ['past-view', 'icon']);
-        renderer.addElement($pastView, 'h2', 'Past');
+        renderer.addElement($pastView, 'h3', 'Past');
 
-        const $allView = renderer.addElement($viewCol, 'div', '', ['option']);
+        const $allView = renderer.addElement($viewCol, 'button', '', ['option']);
         renderer.addElement($allView, 'div', '', ['all-view', 'icon']);
-        renderer.addElement($allView, 'h2', 'All');
+        renderer.addElement($allView, 'h3', 'All');
 
         // Add event listeners
         $dailyView.addEventListener('click', () => {
