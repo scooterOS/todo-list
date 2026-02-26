@@ -171,6 +171,36 @@ const State = {
         render();
     }
 
+    function findTodoFromElement($elem) {
+        const $todo = $elem.closest('.todo-item');
+        if (!$todo) return null;
+
+        const id = $todo.dataset.id;
+        return currentTodos.find(t => String(t.id) === id);
+
+    }
+
+    function handleTodoClick(ev) {
+
+        const todo = findTodoFromElement(ev.target);
+        if (!todo) return;
+
+        if (ev.target.closest('.edit-todo')) {
+            pubsub.publish('edit-todo-popup', todo);
+            return;
+        }
+
+        if (ev.target.closest('.copy-todo')) {
+            addTodo(todo.copy());
+            return;
+        }
+
+        if (ev.target.closest('.delete-todo')) {
+            removeTodo(todo);
+            return;
+        }
+    }
+
     function render() {
         renderer.clearContents($content);
 
@@ -219,11 +249,11 @@ const State = {
         $newTodo.addEventListener('click', () => pubsub.publish('new-todo-popup'));
         $editProject.addEventListener('click', () => pubsub.publish('edit-project-popup', currentProject));
         $deleteProject.addEventListener('click', () => pubsub.publish('remove-project-popup', currentProject));
-
+        $todoContainer.addEventListener('click', handleTodoClick);
 
         for (let todo of currentTodos) {
             // Create todo element
-            const $todoItem = renderer.addElement($todoContainer, 'div', '', ['todo-item']);
+            const $todoItem = renderer.addElement($todoContainer, 'div', '', ['todo-item'], { 'data-id': todo.id });
 
             // Add todo header
             const $todoHeader = renderer.addElement($todoItem, 'div', '', ['spaced', 'title', 'row']);
@@ -246,16 +276,6 @@ const State = {
                 const $todoDesc = renderer.addElement($todoItem, 'div', '');
                 renderer.addElement($todoDesc, 'h4', todo.desc, ['todo-desc']);
             }
-
-            // Add event listeners
-            $checkbox.addEventListener('click', () => {
-                todo.markComplete();
-                storage.saveProject(currentProject);
-                render();
-            });
-            $editTodo.addEventListener('click', () => pubsub.publish('edit-todo-popup', todo));
-            $copyTodo.addEventListener('click', () => addTodo(todo.copy()));
-            $deleteTodo.addEventListener('click', () => removeTodo(todo));
         }
     }
 
