@@ -13,11 +13,30 @@
 </head>
 <body id="container">
     <header id="header">
-        <nav id="toolbar"></nav>
+        <nav id="toolbar">
+            <button class="new-project option">
+                <div class="add-project icon"></div>
+                <h3>New Project</h3>
+            </button>
+            <button class="sort-todos option">
+                <div class="sort icon"></div>
+                <h3>Sort</h3>
+            </button>
+            <button class="search icon"></button>
+            <input id="searchbar">
+        </nav>
+        <nav id="sort-menu" class="hidden">
+            <button class="sort-alpha"></button>
+            <button class="sort-date"></button>
+            <button class="sort-priority"></button>
+            <button class="sort-completed"></button>
+            <input type="checkbox" id="sort-reverse">
+            <button class="close">x</button>
+        </nav>
     </header>
     <div id="sidebar"></div>
     <div id="content">
-        <div id="project-header" class="spaced title row"></div>
+        <div id="project-header"></div>
         <div id="todo-container"></div>
     </div>
     <script type="module" src="./src/main.js"></script>

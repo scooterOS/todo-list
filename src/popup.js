@@ -34,13 +34,9 @@ import { TodoItem, Project } from './project.js';
         // Call the resolution function
         if (typeof resolveFn === 'function') {
             resolveFn();
-        } else {
-            console.warn(`Invalid resolution function.`);
-        }
-
+        } 
         // Remove popup
         document.getElementById('popup').remove();
-
     }
 
     const popup = {

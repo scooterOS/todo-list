@@ -41,6 +41,10 @@ textarea {
     min-height: 100vh;
 }
 
+.hidden {
+    display: none !important;
+}
+
 .row {
     display: flex;
     flex-direction: row;
@@ -167,7 +171,7 @@ hr {
     margin: 0 4px;
 }
 
-.icon.new-project {
+.icon.add-project {
     background-image: url('./img/plus-circle.svg');
 }
 
@@ -195,7 +199,7 @@ hr {
     background-image: url('./img/trash-can.svg');
 }
 
-.icon.sort-todos {
+.icon.sort {
     background-image: url('./img/sort-variant.svg');
 }
 
@@ -244,7 +248,7 @@ hr {
     width: 100vw;
 }
 
-.searchbar {
+#searchbar {
     width: 250px;
     height: 30px;
     border-radius: 12px;
@@ -252,8 +256,10 @@ hr {
     padding: 0 4px;
 }
 
-.submenu {
+#sort-menu {
     position: absolute;
+    background-color: snow;
+    border: 1px solid black;
     width: 200px;
 }
 
