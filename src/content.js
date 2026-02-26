@@ -228,7 +228,7 @@ const State = {
             // Add todo header
             const $todoHeader = renderer.addElement($todoItem, 'div', '', ['spaced', 'title', 'row']);
             const $todoBullet = renderer.addElement($todoHeader, 'span', '', ['option']);
-            const $checkbox = renderer.addElement($todoBullet, 'input', '', [], { type: 'checkbox' });
+            const $checkbox = renderer.addElement($todoBullet, 'input', '', ['todo-check'], { type: 'checkbox' });
             $checkbox.checked = todo.complete;
             renderer.addElement($todoBullet, 'h2', todo.title);
             const $btnList = renderer.addElement($todoHeader, 'span', '', ['button-list']);
@@ -266,17 +266,26 @@ const State = {
         const $todoContainer = renderer.addElement($content, 'div', '', ['todo-container']);
 
         for (let todo of currentTodos) {
-            // Add todo elements
-            const $todoElem = renderer.addElement($todoContainer, 'div', '', ['todo-item']);
-            const $todoRow = renderer.addElement($todoElem, 'div', '', ['row']);
-            const $checkbox = renderer.addElement($todoRow, 'input', '', [], { type: 'checkbox' });
-            renderer.addElement($todoRow, 'h2', todo.title, ['todo-title']);
-            renderer.addElement($todoRow, 'span', todo.getDeadlineText(), ['todo-deadline']);
-            renderer.addElement($todoRow, 'span', todo.getPriorityText(), ['todo-priority']);
-            renderer.addElement($todoElem, 'span', todo.desc, ['todo-desc']);
+            // Create todo element
+            const $todoItem = renderer.addElement($todoContainer, 'div', '', ['todo-item']);
 
-            // Mark if complete
+            // Add todo header
+            const $todoHeader = renderer.addElement($todoItem, 'div', '', ['title', 'row']);
+            const $todoBullet = renderer.addElement($todoHeader, 'span', '', ['option']);
+            const $checkbox = renderer.addElement($todoBullet, 'input', '', ['todo-check'], { type: 'checkbox', disabled: true });
             $checkbox.checked = todo.complete;
+            renderer.addElement($todoBullet, 'h2', todo.title);
+
+            // Add todo info
+            const $todoInfo = renderer.addElement($todoItem, 'div', '', ['evenly', 'row']);
+            renderer.addElement($todoInfo, 'h5', todo.getDeadlineText(), ['todo-deadline']);
+            renderer.addElement($todoInfo, 'h5', todo.getPriorityText(), ['todo-priority']);
+
+            // Add todo description
+            if (todo.equals(targetTodo)) {
+                const $todoDesc = renderer.addElement($todoItem, 'div', '');
+                renderer.addElement($todoDesc, 'h4', todo.desc, ['todo-desc']);
+            }
         }
     }
 
