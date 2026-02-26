@@ -15,6 +15,7 @@ const State = {
     const $content = document.getElementById('content');
     var currentProject = null;
     var currentTodos = [];
+    var targetTodo = null;
     var header = '';
     var state = State.EMPTY;
 
@@ -195,48 +196,56 @@ const State = {
 
     function renderProject() {
         // Add content header
-        const $header = renderer.addElement($content, 'div', '', ['project-title', 'row']);
-        renderer.addElement($header, 'h1', header);
-        const $buttonList = renderer.addElement($header, 'span', '', ['button-list']);
+        const $projectHeader = renderer.addElement($content, 'div', '', ['spaced', 'title', 'row']);
+        renderer.addElement($projectHeader, 'h1', header);
+        const $buttonList = renderer.addElement($projectHeader, 'span', '', ['button-list']);
         const $newTodo = renderer.addElement($buttonList, 'button', '', ['new-todo', 'icon'], { alt: 'New Task', title: 'new task' });
         const $editProject = renderer.addElement($buttonList, 'button', '', ['edit-project', 'icon'], { alt: 'Edit Project', title: 'edit project' });
         const $deleteProject = renderer.addElement($buttonList, 'button', '', ['delete-project', 'icon'], { alt: 'Delete Project', title: 'delete project' });
 
         // Add project description
-        const $desc = renderer.addElement($content, 'div', '', ['project-desc']);
-        renderer.addElement($desc, 'h4', currentProject.desc);
+        const $projectDesc = renderer.addElement($content, 'div', '', ['project-desc']);
+        renderer.addElement($projectDesc, 'h4', currentProject.desc);
 
         // Add tags
         const $tagRow = renderer.addElement($content, 'div', '', ['row']);
         for (let tag of currentProject.tags) {
             renderer.addElement($tagRow, 'p', tag, ['project-tag']);
         }
+        // Add container for todo items
+        const $todoContainer = renderer.addElement($content, 'div', '', ['todo-container']);
 
         // Add event listeners
         $newTodo.addEventListener('click', () => pubsub.publish('new-todo-popup'));
         $editProject.addEventListener('click', () => pubsub.publish('edit-project-popup', currentProject));
         $deleteProject.addEventListener('click', () => pubsub.publish('remove-project-popup', currentProject));
 
-        // Add container for todo items
-        const $todoContainer = renderer.addElement($content, 'div', '', ['todo-container']);
 
         for (let todo of currentTodos) {
-            // Add todo elements
-            const $todoElem = renderer.addElement($todoContainer, 'div', '', ['todo-item']);
-            const $todoRow = renderer.addElement($todoElem, 'div', '', ['row']);
-            const $checkbox = renderer.addElement($todoRow, 'input', '', [], { 'type': 'checkbox' });
-            renderer.addElement($todoRow, 'h2', todo.title, ['todo-title']);
-            renderer.addElement($todoRow, 'span', todo.getDeadlineText(), ['todo-deadline']);
-            renderer.addElement($todoRow, 'span', todo.getPriorityText(), ['todo-priority']);
-            renderer.addElement($todoElem, 'span', todo.desc, ['todo-desc']);
+            // Create todo element
+            const $todoItem = renderer.addElement($todoContainer, 'div', '', ['todo-item']);
 
-            // Mark if complete
+            // Add todo header
+            const $todoHeader = renderer.addElement($todoItem, 'div', '', ['spaced', 'title', 'row']);
+            const $todoBullet = renderer.addElement($todoHeader, 'span', '', ['option']);
+            const $checkbox = renderer.addElement($todoBullet, 'input', '', [], { type: 'checkbox' });
             $checkbox.checked = todo.complete;
+            renderer.addElement($todoBullet, 'h2', todo.title);
+            const $btnList = renderer.addElement($todoHeader, 'span', '', ['button-list']);
+            const $editTodo = renderer.addElement($btnList, 'button', '', ['edit-todo', 'icon'], { alt: 'Edit Task', title: 'edit task' });
+            const $copyTodo = renderer.addElement($btnList, 'button', '', ['copy-todo', 'icon'], { alt: 'Copy Task', title: 'copy task' });
+            const $deleteTodo = renderer.addElement($btnList, 'button', '', ['delete-todo', 'icon'], { alt: 'Delete Task', title: 'delete task' });
 
-            // Add buttons if editing project
-            const $editTodo = renderer.addElement($todoRow, 'button', '', ['edit-todo', 'icon'], { alt: 'Edit Task', title: 'edit task' });
-            const $copyTodo = renderer.addElement($todoRow, 'button', '', ['copy-todo', 'icon'], { alt: 'Copy Task', title: 'copy task' });
-            const $deleteTodo = renderer.addElement($todoRow, 'button', '', ['delete-todo', 'icon'], { alt: 'Delete Task', title: 'delete task' });
+            // Add todo info
+            const $todoInfo = renderer.addElement($todoItem, 'div', '', ['evenly', 'row']);
+            renderer.addElement($todoInfo, 'h5', todo.getDeadlineText(), ['todo-deadline']);
+            renderer.addElement($todoInfo, 'h5', todo.getPriorityText(), ['todo-priority']);
+
+            // Add todo description
+            if (todo.equals(targetTodo)) {
+                const $todoDesc = renderer.addElement($todoItem, 'div', '');
+                renderer.addElement($todoDesc, 'h4', todo.desc, ['todo-desc']);
+            }
 
             // Add event listeners
             $checkbox.addEventListener('click', () => {

@@ -16,7 +16,7 @@ import { TodoItem, Project } from './project.js';
         $popup.append($form);
         
         // Add submit and cancel buttons
-        const $btnRow = renderer.addElement($form, 'div', '', ['row']);
+        const $btnRow = renderer.addElement($form, 'div', '', ['popup-btns', 'row']);
         const $cancelBtn = renderer.addElement($btnRow, 'button', 'Cancel', ['cancel-btn'], { type: 'button' });
         const $submitBtn = renderer.addElement($btnRow, 'button', 'Submit', ['submit-btn'], { type: 'submit'} );
 
@@ -52,16 +52,12 @@ import { TodoItem, Project } from './project.js';
 
             renderer.addElement($form, 'legend', 'New Task');
             renderer.addElement($form, 'h5', 'Name', ['label']);
-
-            const $title = renderer.addElement($form, 'input', '', ['title-field'], { required: true });
+            const $title = renderer.addElement($form, 'input', '', ['title-field'], { placeholder: 'Enter name', required: true });
             renderer.addElement($form, 'h5', 'Description', ['label']);
-
-            const $desc = renderer.addElement($form, 'textarea', '', ['desc-field']);
+            const $desc = renderer.addElement($form, 'textarea', '', ['desc-field'], { placeholder: 'Describe...' });
             renderer.addElement($form, 'h5', 'Due Date', ['label']);
-
             const $deadline = renderer.addElement($form, 'input', '', ['deadline-field'], { type: 'date', required: true });
             renderer.addElement($form, 'h5', 'Priority', ['label']);
-
             const $priority = renderer.addElement($form, 'select', '', ['priority-field']);
             renderer.recursiveAdd($priority, [
                 { 'type': 'option', 'text': 'Some Day', 'attr': { 'value': 0 }},
@@ -98,11 +94,9 @@ import { TodoItem, Project } from './project.js';
 
             renderer.addElement($form, 'legend', 'Edit Task');
             renderer.addElement($form, 'h6', 'Name', ['label']);
-
-            const $title = renderer.addElement($form, 'input', '', ['title-field'], { value: todo.title, required: true });
+            const $title = renderer.addElement($form, 'input', '', ['title-field'], { value: todo.title, placeholder: 'Enter name', required: true });
             renderer.addElement($form, 'h6', 'Description', ['label']);
-
-            const $desc = renderer.addElement($form, 'textarea', '', ['desc-field']);
+            const $desc = renderer.addElement($form, 'textarea', '', ['desc-field'], { placeholder: 'Describe...' });
             $desc.value = todo.desc || '';
             renderer.addElement($form, 'h6', 'Due Date', ['label']);
 
@@ -214,9 +208,9 @@ import { TodoItem, Project } from './project.js';
             // Populate form
             renderer.addElement($form, 'legend', 'New Project');
             renderer.addElement($form, 'h5', 'Name', ['label']);
-            const $title = renderer.addElement($form, 'input', '', ['title-field'], { required: true });
+            const $title = renderer.addElement($form, 'input', '', ['title-field'], { placeholder: 'Enter name', required: true });
             renderer.addElement($form, 'h5', 'Description', ['label']);
-            const $desc = renderer.addElement($form, 'textarea', '', ['desc-field']);
+            const $desc = renderer.addElement($form, 'textarea', '', ['desc-field'], { placeholder: 'Describe...' });
             renderer.addElement($form, 'h5', 'Tags', ['label']);
             const $tagContainer = renderer.addElement($form, 'div', '', ['tag-container']);
             const tagEditor = popup.createTagEditor($tagContainer);
@@ -242,9 +236,9 @@ import { TodoItem, Project } from './project.js';
             // Populate form
             renderer.addElement($form, 'legend', 'Edit Project');
             renderer.addElement($form, 'h5', 'Name', ['label']);
-            const $title = renderer.addElement($form, 'input', '', ['title-field'], { value: project.title, required: true });
+            const $title = renderer.addElement($form, 'input', '', ['title-field'], { value: project.title, placeholder: 'Enter name', required: true });
             renderer.addElement($form, 'h5', 'Description', ['label']);
-            const $desc = renderer.addElement($form, 'textarea', '', ['desc-field']);
+            const $desc = renderer.addElement($form, 'textarea', '', ['desc-field'], { placeholder: 'Describe...' });
             $desc.value = project.desc || '';
             renderer.addElement($form, 'h5', 'Tags', ['label']);
             const $tagContainer = renderer.addElement($form, 'div', '', ['tag-container']);

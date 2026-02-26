@@ -27,12 +27,6 @@ ul, li {
     list-style: none;
 }
 
-input {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-}
-
 textarea {
     resize: none;
 }
@@ -42,7 +36,7 @@ textarea {
 #container {
     display: grid;
     grid-template-rows: 90px 1fr;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: clamp(180px, 14vw, 240px) repeat(1, 1fr);
     width: 100vw;
     min-height: 100vh;
 }
@@ -60,7 +54,15 @@ textarea {
 }
 
 .title {
-    margin-bottom: 4px;
+    margin-bottom: 15px;
+}
+
+.spaced {
+    justify-content: space-between;
+}
+
+.evenly {
+    justify-content: space-evenly;
 }
 
 .option {
@@ -71,6 +73,8 @@ textarea {
 }
 
 button {
+    font-family: 'Open Sans';
+    font-size: 1.8rem;
     border-style: none;
     cursor: pointer;
     min-width: 20px;
@@ -120,6 +124,23 @@ p, input {
     font-family: 'Open Sans';
     font-size: 1.8rem;
     font-weight: lighter;
+}
+
+form :not(.label) {
+    margin-bottom: 8px;
+}
+
+input::placeholder, textarea::placeholder {
+    color: darkgrey;
+    font-style: italic;
+    opacity: 1;
+}
+
+legend {
+    font-family: 'Young Serif';
+    font-size: 3.2rem;
+    font-weight: bold;
+    margin-bottom: 12px;
 }
 
 textarea {
@@ -240,6 +261,7 @@ hr {
 
 #sidebar {
     white-space: nowrap;
+    overflow: hidden;
     grid-row: 2 / 3;
     grid-column: 1 / 2;
     background-color: rgb(234, 255, 199);
@@ -252,18 +274,15 @@ hr {
 
 .project-label {
     text-align: left;
-    text-indent: 12px;
+    text-indent: 6px;
 }
 
 /* content */
 
 #content {
     text-wrap: wrap;
-    padding: 20px 15px;
-}
-
-.project-title {
-    justify-content: space-between;
+    overflow-x: hidden;
+    padding: 12px;
 }
 
 .project-tag {
@@ -292,6 +311,7 @@ hr {
 .todo-item {
     border: 2px solid rgb(5, 5, 85);
     border-radius: 8px;
+    padding: 4px;
 }
 
 /* popup */
@@ -312,7 +332,39 @@ body:has(#popup) {
 
 .dialog {
     background: white;
-    width: clamp(200px, 75vw, 500px);
+    max-width: 350px;
     padding: 1.5rem;
     border-radius: 12px;
+}
+
+.tag {
+    width: 100px;
+}
+
+.popup-btns {
+    justify-content: space-around;
+}
+
+.popup-btns button {
+    border-radius: 20px;
+    padding: 6px 8px;
+}
+
+.submit-btn {
+    color: white;
+    background-color: rgb(9, 9, 162);
+}
+
+.cancel-btn {
+    color: white;
+    background-color: rgb(123, 21, 21);
+}
+
+
+@media (max-width: 480px) {
+
+}
+
+@media (max-width: 600px) {
+
 }

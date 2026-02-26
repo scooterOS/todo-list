@@ -1,4 +1,4 @@
-const events = {
+const pubsub = {
     events: {},
 
     subscribe: function (eventName, fn) {
@@ -18,7 +18,11 @@ const events = {
         if (!listeners) return;
 
         [...listeners].forEach(fn => fn(...args));
+    },
+
+    remove: function (eventName) {
+        delete this.events[eventName];
     }
 };
 
-export default events;
+export default pubsub;
