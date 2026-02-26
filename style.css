@@ -297,14 +297,14 @@ hr {
     content: '#';
 }
 
-.todo-container {
+#todo-container {
     display: grid;
     grid-template-columns: 1fr;
     gap: 6px;
     padding: 15px;
 }
 
-.todo-container.grid {
+#todo-container.grid {
     grid-template-columns: (auto-fit, minmax(300px, 1fr));
 }
 

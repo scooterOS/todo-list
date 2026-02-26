@@ -13,7 +13,7 @@ export class TodoItem {
         return other && this.id === other.id;
     }
 
-    markComplete() {
+    toggleComplete() {
         this.complete = !this.complete;
     }
 

@@ -15,6 +15,7 @@ const pubsub = {
     
     publish: function (eventName, ...args) {
         const listeners = this.events[eventName];
+        console.log(eventName);
         if (!listeners) return;
 
         [...listeners].forEach(fn => fn(...args));
