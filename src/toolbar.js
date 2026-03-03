@@ -44,7 +44,7 @@ import pubsub from './pubsub.js';
             return;
         }
         if (ev.target.closest('.sort-priority')) {
-            pubsub.publish('sort-priority', $sortReverse.checked);
+            pubsub.publish('sort-priority', !$sortReverse.checked);
             return;
         }
         if (ev.target.closest('.sort-completed')) {

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap">
     <link rel="stylesheet" href="./style.css">
+    <script type="module" src="./src/main.js" defer></script>
     <title>Todo List</title>
 </head>
 <body id="container">
@@ -26,15 +27,18 @@
             <input id="searchbar">
         </nav>
         <nav id="sort-menu" class="hidden">
-            <button class="sort-alpha"></button>
-            <button class="sort-date"></button>
-            <button class="sort-priority"></button>
-            <button class="sort-completed"></button>
-            <input type="checkbox" id="sort-reverse">
+            <button class="icon sort-alpha" title="alphabetical"></button>
+            <button class="icon sort-date" title="due date"></button>
+            <button class="icon sort-priority" title="priority"></button>
+            <button class="icon sort-completed" title="completed"></button>
+            <div class="option">
+                <input type="checkbox" id="sort-reverse" title="reverse">
+                <p>Reverse</p>
+            </div>
             <button class="close">x</button>
         </nav>
     </header>
-    <!--Modules may insert elements in sidebar and content-->
+    <!--Modules may insert/remove elements below-->
     <div id="sidebar">
         <div id="project-list" class="column"></div>
         <hr>
@@ -44,6 +48,5 @@
         <div id="project-header"></div>
         <div id="todo-container"></div>
     </div>
-    <script type="module" src="./src/main.js"></script>
 </body>
 </html>
