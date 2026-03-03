@@ -87,16 +87,18 @@ import { Project } from './project.js';
         // View todos
         setTodosViewed(todos, viewMode);
         renderProjectShell(false);
+        renderTodoContainer(false);
     }
 
     function searchTodos(inputStr) {
         // Load todos
         const todos = storage.loadTodos((todo) => {
-            return todo.title.includes(inputStr) || todo.desc.includes(inputStr);
+            return todo.title.toLowerCase().includes(inputStr) || todo.desc.toLowerCase().includes(inputStr);
         });
         // View todos
         setTodosViewed(todos, `Search result for "${inputStr}"`);
         renderProjectShell(false);
+        renderTodoContainer(false);
     }
 
     function addTodo(todo) {
@@ -166,8 +168,8 @@ import { Project } from './project.js';
         renderTodoContainer();
     }
 
-    function findTodoFromElement($elem) {
-        const $todo = $elem.closest('.todo-item');
+    function findTodoFromElement(elem) {
+        const $todo = elem.closest('.todo-item');
         if (!$todo) return null;
 
         const id = $todo.dataset.id;
@@ -200,17 +202,14 @@ import { Project } from './project.js';
             pubsub.publish('edit-todo-popup', todo);
             return;
         }
-
         if (ev.target.closest('.copy-todo')) {
             addTodo(todo.copy());
             return;
         }
-
         if (ev.target.closest('.delete-todo')) {
             removeTodo(todo);
             return;
         }
-        
         if (ev.target.closest('.check-todo')) {
             toggleTodo(todo);
             return;
@@ -255,10 +254,10 @@ import { Project } from './project.js';
     }
 
     function replaceTodoElement(oldTodo, newTodo) {
-        const $replaceElem = $todoContainer.querySelector(`[data-id="${oldTodo.id}"]`);
-        if (!$replaceElem) return;
+        const replaceElem = $todoContainer.querySelector(`[data-id="${oldTodo.id}"]`);
+        if (!replaceElem) return;
 
-        addTodoElement(newTodo, $replaceElem);
+        addTodoElement(newTodo, replaceElem);
     }
 
     function renderAll() {
@@ -274,7 +273,7 @@ import { Project } from './project.js';
         renderer.addElement($title, 'h1', header);
 
         if (!projectMode) return;
-
+        
         // Add buttons
         const $buttonList = renderer.addElement($title, 'span', '', ['button-list']);
         renderer.addElement($buttonList, 'button', '', ['new-todo', 'icon'], { alt: 'New Task', title: 'new task' });

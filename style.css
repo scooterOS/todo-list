@@ -36,7 +36,7 @@ textarea {
 #container {
     display: grid;
     grid-template-rows: 90px 1fr;
-    grid-template-columns: clamp(180px, 14vw, 240px) repeat(1, 1fr);
+    grid-template-columns: clamp(185px, 14vw, 240px) repeat(1, 1fr);
     width: 100vw;
     min-height: 100vh;
 }
@@ -207,23 +207,23 @@ hr {
     background-image: url('./img/magnify.svg');
 }
 
-.icon.daily-view {
+.icon.daily {
     background-image: url('./img/notebook.svg');
 }
 
-.icon.weekly-view {
+.icon.weekly {
     background-image: url('./img/calendar_view_week.svg');
 }
 
-.icon.monthly-view {
+.icon.monthly {
     background-image: url('./img/calendar-month-outline.svg');
 }
 
-.icon.past-view {
+.icon.past {
     background-image: url('./img/archive.svg');
 }
 
-.icon.all-view {
+.icon.all {
     background-image: url('./img/all_inclusive.svg');
 }
 

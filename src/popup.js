@@ -5,8 +5,14 @@ import { TodoItem, Project } from './project.js';
 
 
 (function() {
+    var resolveFn = null;
 
-    const launch = ($form, resolveFn) => {
+    function launch($form, fn) {
+        if (typeof fn !== 'function') return;
+
+        // Set resolution function
+        resolveFn = fn;
+
         // Add class to form
         $form.classList.add('dialog');
 
@@ -17,26 +23,37 @@ import { TodoItem, Project } from './project.js';
         
         // Add submit and cancel buttons
         const $btnRow = renderer.addElement($form, 'div', '', ['popup-btns', 'row']);
-        const $cancelBtn = renderer.addElement($btnRow, 'button', 'Cancel', ['cancel-btn'], { type: 'button' });
-        const $submitBtn = renderer.addElement($btnRow, 'button', 'Submit', ['submit-btn'], { type: 'submit'} );
+        renderer.addElement($btnRow, 'button', 'Cancel', ['cancel-btn'], { type: 'button' });
+        renderer.addElement($btnRow, 'button', 'Submit', ['submit-btn'], { type: 'submit'} );
 
-        // Add event listeners
-        $cancelBtn.addEventListener('click', () => resolve());
-        $form.addEventListener('submit', (ev) => {
-            ev.preventDefault();
-            resolve(resolveFn)});
-        $popup.addEventListener('mousedown', (ev) => {
-            if (ev.target === $popup) resolve();
-        });
+        // Add event listener
+        $popup.addEventListener('click', handlePopupClick);
     }
 
-    const resolve = (resolveFn) => {
+    function resolve() {
         // Call the resolution function
         if (typeof resolveFn === 'function') {
             resolveFn();
         } 
+        resolveFn = null;
+
         // Remove popup
-        document.getElementById('popup').remove();
+        const $popup = document.getElementById('popup');
+        $popup.removeEventListener('click', handlePopupClick);
+        $popup.remove();
+    }
+
+    function handlePopupClick(ev) {
+        if (ev.target.closest('.cancel-btn')) {
+            resolveFn = null;
+            resolve();
+            return;
+        }
+        if (ev.target.closest('.submit-btn') ||
+            ev.target === document.getElementById('popup')) {
+            resolve();
+            return;
+        }
     }
 
     const popup = {

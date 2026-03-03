@@ -34,7 +34,12 @@
             <button class="close">x</button>
         </nav>
     </header>
-    <div id="sidebar"></div>
+    <!--Modules may insert elements in sidebar and content-->
+    <div id="sidebar">
+        <div id="project-list" class="column"></div>
+        <hr>
+        <div id="view-list" class="column"></div>
+    </div>
     <div id="content">
         <div id="project-header"></div>
         <div id="todo-container"></div>
