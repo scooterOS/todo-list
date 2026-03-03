@@ -10,7 +10,6 @@ import { Project } from './project.js';
 
     var currentProject = null;
     var currentTodos = [];
-    var targetTodo = null;
     var header = '';
 
     function init() {
@@ -195,6 +194,9 @@ import { Project } from './project.js';
     }
 
     function handleTodoClick(ev) {
+        const $todoItem = ev.target.closest('.todo-item');
+        if (!$todoItem) return;
+
         const todo = findTodoFromElement(ev.target);
         if (!todo) return;
 
@@ -214,6 +216,8 @@ import { Project } from './project.js';
             toggleTodo(todo);
             return;
         }
+        // Only expand if click wasn't on a control button
+        expandTodoElement($todoItem);
     }
 
     function addTodoElement(todo, replaceElem=null, editable=true) {
@@ -241,12 +245,9 @@ import { Project } from './project.js';
         const $todoInfo = renderer.addElement($todoItem, 'div', '', ['evenly', 'row']);
         renderer.addElement($todoInfo, 'h5', todo.getDeadlineText(), ['todo-deadline']);
         renderer.addElement($todoInfo, 'h5', todo.getPriorityText(), ['todo-priority']);
-
-        // Add description
-        if (todo.equals(targetTodo)) {
-            const $todoDesc = renderer.addElement($todoItem, 'div', '');
-            renderer.addElement($todoDesc, 'h4', todo.desc, ['todo-desc']);
-        }
+        renderer.addElement($todoItem, 'hr', '', ['uncover']);
+        const $todoDesc = renderer.addElement($todoItem, 'div', '');
+        renderer.addElement($todoDesc, 'h6', todo.desc, ['todo-desc', 'uncover']);
     }
 
     function removeTodoElement(todo) {
@@ -258,6 +259,22 @@ import { Project } from './project.js';
         if (!replaceElem) return;
 
         addTodoElement(newTodo, replaceElem);
+    }
+
+    function expandTodoElement(element) {
+        const todoElements = $todoContainer.querySelectorAll('.todo-item');
+        const $todoItem = element.closest('.todo-item')
+
+        for (let $todo of todoElements) {
+            if ($todo !== $todoItem && $todo.classList.contains('expanded')) {
+                $todo.classList.remove('expanded');
+            }
+        }
+        if ($todoItem.classList.contains('expanded')) {
+            $todoItem.classList.remove('expanded');
+        } else {
+            $todoItem.classList.add('expanded');
+        }
     }
 
     function renderAll() {
