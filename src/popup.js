@@ -26,7 +26,13 @@ import { TodoItem, Project } from './project.js';
         renderer.addElement($btnRow, 'button', 'Cancel', ['cancel-btn'], { type: 'button' });
         renderer.addElement($btnRow, 'button', 'Submit', ['submit-btn'], { type: 'submit'} );
 
-        // Add event listener
+        // Focus on first field
+        setTimeout(() => {
+            const firstInput = $form.querySelector('input, textarea, select');
+            if (firstInput) firstInput.focus();
+        });
+        // Add event listeners
+        $popup.addEventListener('submit', handleFormSubmit);
         $popup.addEventListener('click', handlePopupClick);
     }
 
@@ -39,20 +45,28 @@ import { TodoItem, Project } from './project.js';
 
         // Remove popup
         const $popup = document.getElementById('popup');
+        $popup.removeEventListener('submit', handleFormSubmit);
         $popup.removeEventListener('click', handlePopupClick);
         $popup.remove();
     }
 
-    function handlePopupClick(ev) {
-        if (ev.target.closest('.cancel-btn')) {
-            resolveFn = null;
-            resolve();
+    function handleFormSubmit(ev) {
+        ev.preventDefault();
+
+        const $form = ev.target;
+
+        // Trigger browser validation UI
+        if (!$form.checkValidity()) {
+            $form.reportValidity();
             return;
         }
-        if (ev.target.closest('.submit-btn') ||
-            ev.target === document.getElementById('popup')) {
+        resolve();
+    }
+
+    function handlePopupClick(ev) {
+        if (ev.target.closest('.cancel-btn') || ev.target === document.getElementById('popup')) {
+            resolveFn = null;
             resolve();
-            return;
         }
     }
 
@@ -151,66 +165,100 @@ import { TodoItem, Project } from './project.js';
             });
         },
 
-        createTagEditor: function($container, initialTags = []) {
+    createTagEditor: function ($container, initialTags = []) {
 
-            const tagBtn = renderer.addElement($container, 'button', '+', ['add-tag-btn'], { type: 'button' });
+            const tagBtn = renderer.addElement(
+                $container,
+                'button',
+                '+',
+                ['add-tag-btn'],
+                { type: 'button' }
+            );
 
             function normalize(value) {
                 return value.trim().toLowerCase();
             }
 
-            function getAllTags(exclude = null) {
-                return Array.from($container.querySelectorAll('.tag'))
-                    .filter(el => el !== exclude)
-                    .map(el => normalize(el.value));
-            }
-
             function createTag(value = '') {
-                const input = renderer.addElement($container, 'input', '', ['tag'], { value });
+                const input = renderer.addElement(
+                    $container,
+                    'input',
+                    '',
+                    ['tag'],
+                    { value }
+                );
                 input.placeholder = 'Enter tag';
                 input.select();
-
-                input.addEventListener('blur', () => {
-                    if (!input.value.trim() || getAllTags(input).includes(normalize(input.value))) {
-                        input.remove();
-                    }
-                });
-
-                input.addEventListener('keydown', e => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        createTag();
-                    }
-                });
-
-                input.addEventListener('contextmenu', e => {
-                    e.preventDefault();
-                    input.remove();
-                });
-
                 return input;
             }
 
-            tagBtn.addEventListener('click', e => {
+            function getTags() {
+                const map = new Map();
+
+                $container.querySelectorAll('.tag').forEach(tag => {
+                    const v = tag.value.trim();
+                    if (!v) return;
+
+                    const key = normalize(v);
+                    if (!map.has(key)) map.set(key, v);
+                });
+
+                return Array.from(map.values());
+            }
+
+            function handleClick(e) {
+                if (e.target.closest('.add-tag-btn')) {
+                    e.preventDefault();
+                    createTag();
+                    return;
+                }
+            }
+
+            function handleBlur(e) {
+                if (!e.target.classList.contains('tag')) return;
+
+                const value = e.target.value.trim();
+
+                if (!value) {
+                    e.target.remove();
+                    return;
+                }
+
+                const allTags = Array.from($container.querySelectorAll('.tag'))
+                    .filter(el => el !== e.target)
+                    .map(el => normalize(el.value));
+
+                if (allTags.includes(normalize(value))) {
+                    e.target.remove();
+                }
+            }
+
+            function handleKeydown(e) {
+                if (!e.target.classList.contains('tag')) return;
+
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    createTag();
+                }
+            }
+
+            function handleContextMenu(e) {
+                if (!e.target.classList.contains('tag')) return;
+
                 e.preventDefault();
-                createTag();
-            });
+                e.target.remove();
+            }
+
+            // Add event listeners
+            $container.addEventListener('click', handleClick);
+            $container.addEventListener('blur', handleBlur, true); // use capture for blur
+            $container.addEventListener('keydown', handleKeydown);
+            $container.addEventListener('contextmenu', handleContextMenu);
 
             // Preload tags
             initialTags.forEach(tag => createTag(tag));
 
-            return {
-                getTags() {
-                    const map = new Map();
-                    $container.querySelectorAll('.tag').forEach(tag => {
-                        const v = tag.value.trim();
-                        if (!v) return;
-                        const key = normalize(v);
-                        if (!map.has(key)) map.set(key, v);
-                    });
-                    return Array.from(map.values());
-                }
-            };
+            return { getTags };
         },
 
         newProject: function () {
